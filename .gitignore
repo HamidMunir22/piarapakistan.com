@@ -1,0 +1,10 @@
+node_modules/
+.env
+dist/
+build/
+backend/uploads/idcards/*
+backend/uploads/profiles/*
+!backend/uploads/idcards/.gitkeep
+!backend/uploads/profiles/.gitkeep
+.DS_Store
+*.log

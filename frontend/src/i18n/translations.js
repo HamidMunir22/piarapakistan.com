@@ -1,0 +1,80 @@
+// Central translation dictionary. Add new keys here as you translate more of
+// the UI — components use them via the `t()` function from LanguageContext,
+// e.g. t("nav.home"). Keep keys namespaced (nav.*, home.*, auth.*, etc.) so
+// it stays organized as it grows.
+const translations = {
+  en: {
+    "nav.home": "Home",
+    "nav.categories": "Categories",
+    "nav.dashboard": "Dashboard",
+    "nav.orders": "Orders",
+    "nav.adminPanel": "Admin Panel",
+    "nav.about": "About",
+    "nav.help": "Help",
+    "nav.login": "Login",
+    "nav.register": "Register",
+    "nav.logout": "Logout",
+    "nav.searchPlaceholder": "Search services or products...",
+    "nav.myOrders": "My Orders",
+    "nav.cart": "Cart",
+
+    "home.title1": "Every Service.",
+    "home.title2": "One Platform.",
+    "home.subtitle": "Electrician, plumber, AC repair, shop products — all in one place, near you, verified and secure.",
+    "home.sellCta": "Sell Your Service",
+    "home.findCta": "Find Services",
+    "home.footerNote": "Categories, listings, and search are live. Cart, dashboards, and payments are also ready.",
+
+    "common.loading": "Loading...",
+    "common.viewAll": "View All",
+    "common.cancel": "Cancel",
+    "common.save": "Save",
+    "common.send": "Send",
+    "common.close": "Close",
+
+    "chat.title": "Messages",
+    "chat.noConversations": "No conversations yet.",
+    "chat.typeMessage": "Type a message...",
+    "chat.messageSeller": "Message Seller",
+    "chat.assistant": "PiaraPakistan Assistant",
+    "chat.assistantGreeting": "Assalam-o-Alaikum! Main aapki kis tarah madad kar sakta hoon?",
+  },
+  ur: {
+    "nav.home": "ہوم",
+    "nav.categories": "کیٹیگریز",
+    "nav.dashboard": "ڈیش بورڈ",
+    "nav.orders": "آرڈرز",
+    "nav.adminPanel": "ایڈمن پینل",
+    "nav.about": "ہمارے بارے میں",
+    "nav.help": "مدد",
+    "nav.login": "لاگ ان",
+    "nav.register": "رجسٹر کریں",
+    "nav.logout": "لاگ آؤٹ",
+    "nav.searchPlaceholder": "سروسز یا پروڈکٹس تلاش کریں...",
+    "nav.myOrders": "میرے آرڈرز",
+    "nav.cart": "کارٹ",
+
+    "home.title1": "ہر سروس۔",
+    "home.title2": "ایک پلیٹ فارم۔",
+    "home.subtitle": "الیکٹریشن، پلمبر، اے سی ریپیئر، دکان کے پروڈکٹس — سب کچھ ایک جگہ، آپ کے قریب، ویریفائیڈ اور محفوظ۔",
+    "home.sellCta": "اپنی سروس بیچیں",
+    "home.findCta": "سروسز تلاش کریں",
+    "home.footerNote": "کیٹیگریز، لسٹنگز اور سرچ لائیو ہیں۔ کارٹ، ڈیش بورڈز اور پیمنٹس بھی تیار ہیں۔",
+
+    "common.loading": "لوڈ ہو رہا ہے...",
+    "common.viewAll": "سب دیکھیں",
+    "common.cancel": "منسوخ کریں",
+    "common.save": "محفوظ کریں",
+    "common.send": "بھیجیں",
+    "common.close": "بند کریں",
+
+    "chat.title": "پیغامات",
+    "chat.noConversations": "ابھی تک کوئی گفتگو نہیں۔",
+    "chat.typeMessage": "پیغام لکھیں...",
+    "chat.messageSeller": "سیلر کو میسج کریں",
+    "chat.assistant": "پیارا پاکستان اسسٹنٹ",
+    "chat.assistantGreeting": "السلام علیکم! میں آپ کی کس طرح مدد کر سکتا ہوں؟",
+  },
+};
+
+export default translations;
