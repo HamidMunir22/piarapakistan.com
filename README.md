@@ -1,8 +1,6 @@
 # PiaraPakistan — Multivendor Services & Products Marketplace
 
-**Phase 1 (is package mein shamil):** Poori tarah kaam karne wala **Authentication & Registration System** —
-Buyer, Seller (services), aur Shop (products) teeno k liye. ID card verification, phone OTP,
-JWT login, security middleware sab tayyar hai.
+A full-featured multivendor marketplace for Pakistan (a Fiverr/Upwork/Zameen.com-style hybrid) — buyers, service-selling sellers, and product-selling shops, all in one platform.
 
 ---
 
@@ -12,17 +10,19 @@ JWT login, security middleware sab tayyar hai.
 piarapakistan/
 ├── backend/              → Node.js + Express + MongoDB API
 │   ├── config/db.js
-│   ├── models/            (User, Otp)
-│   ├── controllers/       (authController)
-│   ├── routes/            (authRoutes)
+│   ├── models/            (User, Otp, Listing, Order, Review, PlatformSettings, Complaint, PaymentIntent, Conversation, Message)
+│   ├── controllers/       (authController, listingController, orderController, adminController, complaintController, paymentController, chatController)
+│   ├── routes/            (authRoutes, listingRoutes, orderRoutes, adminRoutes, complaintRoutes, paymentRoutes, chatRoutes)
 │   ├── middleware/         (auth guard, file upload)
-│   ├── utils/              (JWT, OTP, Email, SMS)
-│   ├── uploads/            (ID cards, profile pictures)
+│   ├── utils/              (JWT, OTP, Email, SMS, categories, commission calculator, JazzCash, Easypaisa)
+│   ├── uploads/            (ID cards, profile pictures, listing images)
 │   └── server.js
 └── frontend/              → React (Vite) app
-    ├── src/pages/          (Home, Register, VerifyOtp, Login)
-    ├── src/components/     (Navbar)
-    ├── src/context/        (AuthContext)
+    ├── src/pages/          (Home, Register, VerifyOtp, Login, Categories, Search, ListingDetail, Cart, Checkout, Orders, HelpCenter, Messages, MockPayment, PaymentResult)
+    ├── src/pages/dashboard/  (MyListings, ListingForm, SellerOrders)
+    ├── src/pages/admin/     (Dashboard, KycApprovals, Users, Listings, Orders, Commission, Complaints)
+    ├── src/components/     (Navbar, CategoryCard, ListingCard, Tilt, MapView, ProtectedRoute)
+    ├── src/context/        (AuthContext, CartContext, LanguageContext, ChatContext)
     └── src/styles/         (brand-colored global.css)
 ```
 
@@ -30,83 +30,77 @@ piarapakistan/
 
 ## 🎨 Brand
 
-Colors ek lightened, beautiful palette mein hain:
+Colors use a lightened, beautiful palette:
 - Orange `#FF9D4D` (accent: `#F0812A`)
 - Green `#34A866` (accent: `#1F7D4C`)
 - Cream background `#FDFCFA`
 
-Logo `frontend/public/logo.png` mein already daal diya hai.
+The logo is already placed at `frontend/public/logo.png`.
 
-### 🔧 Maintainability — Colors aur Units ek hi jagah se
+### 🔧 Maintainability — Colors and Units from One Place
 
-Taake **rang badalna** ya **spacing edit karna** aasan rahe (poore codebase mein dhoondhte na phirna pade), do rules follow kiye hain:
+To make **changing colors** or **editing spacing** easy (without hunting through the whole codebase), two rules are followed throughout:
 
-1. **Sirf `px` units** — har jagah sizing, spacing, gaps, radius, font-size sab `px` mein hain (koi `rem`/`em` mix nahi). Sirf 2 jagah `%` aur `vh` use hui hai — wo bhi zaroori hain kyunke wo container/screen ko "poora bharne" (fill) ke liye hain, fixed size ke liye nahi (agar `px` daal dete to chhoti/badi screen par layout toot jata).
-2. **Colors sirf 2 jagah define hain:**
-   - `frontend/src/styles/global.css` ke `:root { }` mein (CSS variables — 90% UI yahan se rang leta hai)
-   - `frontend/src/theme.js` mein (JavaScript mein jahan CSS variable use nahi ho sakta, jaise map ke pins ki SVG) — **inn dono jagah ki values hamesha match honi chahiye.**
+1. **`px` units only** — all sizing, spacing, gaps, radii, and font-size are in `px` everywhere (no mixing with `rem`/`em`). `%` and `vh` are used in only 2 places, and those are necessary because they're meant to "fill" a container/screen, not represent a fixed size (using `px` there would break the layout on smaller/larger screens).
+2. **Colors are defined in only 2 places:**
+   - `frontend/src/styles/global.css` inside `:root { }` (CSS variables — 90% of the UI pulls color from here)
+   - `frontend/src/theme.js` (for JavaScript contexts where a CSS variable can't be used, like the map pin SVGs) — **the values in both places must always match.**
 
-   Koi bhi rang badalne ke liye bas `global.css` ke `:root` mein value badal dein — poori website mein automatically update ho jayega. Agar map pins ka rang bhi badalna hai to `theme.js` mein wahi value daal dein.
+   To change any color, just update the value in `global.css`'s `:root` — it updates automatically across the whole site. If you also want the map pin color to change, update the same value in `theme.js`.
 
 ---
 
-## 🆕 Phase 2 mein kya add hua (Categories + Listings + Search)
+## 🆕 Categories, Listings & Search
 
 1. **Categories** — 11 built-in categories (Electrician, AC Sale/Repair, Plumber,
    Carpenter, Painter, Home Shifting, Electronics Shop, Mobile Repair, Tailor,
-   Grocery, Other). List `backend/utils/categories.js` mein hai, yahan se edit karein.
-2. **Listings** — Seller apni **services**, Shop apne **products** add/edit/delete/pause
-   kar sakta hai (photos, price PKR mein, price type: fixed / hourly / starting-at,
-   shop ke liye stock quantity).
-3. **Search & Browse** — Keyword, category, city, price range, aur service/product
-   type se filter. "Mere qareeb dikhayein" button browser location le kar **nearby-first
-   sorting** karta hai (MongoDB geospatial query).
-4. **Seller/Shop Dashboard** — apni saari listings, orders count, rating, aur
-   active/paused status ek table mein, edit/delete/pause ke buttons ke saath.
-5. **KYC Gate** — jab tak seller/shop ka ID card admin approve nahi karta (`kycStatus:
-   "approved"`), wo listing add nahi kar sakta — fraud rokne ke liye.
+   Grocery, Other). The list lives in `backend/utils/categories.js` — edit it from there.
+2. **Listings** — Sellers can add/edit/delete/pause their **services**, Shops can do the same for their **products**
+   (photos, price in PKR, price type: fixed / hourly / starting-at,
+   stock quantity for shops).
+3. **Search & Browse** — Filter by keyword, category, city, price range, and service/product
+   type. The "Show near me" button uses the browser location for **nearby-first
+   sorting** (MongoDB geospatial query).
+4. **Seller/Shop Dashboard** — all their listings, order counts, rating, and
+   active/paused status in one table, with edit/delete/pause buttons.
+5. **KYC Gate** — a seller/shop cannot add a listing until an admin approves their ID card
+   (`kycStatus: "approved"`) — this prevents fraud.
 
-### Admin ke liye pehla KYC approval (temporary, poora Admin Panel Phase 5 mein aayega)
+### First admin account (for local testing/KYC approval)
 
-Chunke abhi poora Admin Panel nahi bana, testing k liye pehla admin account is tarah banayein:
+To create the first admin account for testing:
 
 ```bash
 cd backend
 node seedAdmin.js
 ```
 
-Ye ek admin account bana dega (default: `admin@piarapakistan.com` / `ChangeMe123!` — `.env`
-mein `ADMIN_EMAIL`, `ADMIN_PHONE`, `ADMIN_PASSWORD` set kar ke customize kar sakte hain).
-Admin login kar ke in endpoints se seller/shop KYC approve kar sakta hai:
-
-- `GET /api/admin/pending-kyc` — pending sellers/shops ki list
-- `PUT /api/admin/kyc/:userId/approve`
-- `PUT /api/admin/kyc/:userId/reject`
-
-(Phase 5 mein ye sab ek proper Admin Panel UI mein aa jayega.)
+This creates an admin account (default: `admin@piarapakistan.com` / `ChangeMe123!` — customize it by
+setting `ADMIN_EMAIL`, `ADMIN_PHONE`, `ADMIN_PASSWORD` in `.env`).
+Once logged in, the admin can manage everything from the full **Admin Panel** (`/admin`) — including approving/rejecting seller and shop KYC submissions.
 
 ---
 
-## ✅ Is Phase mein kya kaam karta hai
+## ✅ What Works
 
 1. **Register** (Buyer / Seller / Shop) — name, email, phone, password, CNIC number,
-   ID card front + back tasveer, address, city, area, aur seller/shop k liye
+   front + back ID card photo, address, city, area, and for sellers/shops:
    category + bank account details.
-2. **Phone OTP verification** (SMS) — account tabhi active hota hai jab OTP verify ho.
-3. **Login** — email ya phone + password, JWT token based session.
-4. **Security**: password hashing (bcrypt), rate-limiting (brute-force se bachao),
+2. **Phone OTP verification** (SMS) — the account only becomes active once the OTP is verified.
+3. **Login** — email or phone + password, JWT token-based session.
+4. **Security**: password hashing (bcrypt), rate-limiting (brute-force protection),
    Helmet security headers, role-based access control, suspended-account blocking.
-5. Seller/Shop ka `kycStatus` field automatically `"pending"` set hota hai — admin
-   panel (Phase 5) mein isay approve/reject kiya ja sakega.
+5. A seller/shop's `kycStatus` field is automatically set to `"pending"` — it can be
+   approved/rejected from the Admin Panel.
 
 ---
 
-## 🚀 Local mein chalane ka tareeqa
+## 🚀 Running Locally
 
 ### Backend
 ```bash
 cd backend
-cp .env.example .env      # phir .env file mein apni values daalein
+cp .env.example .env      # then fill in your own values in the .env file
 npm install
 npm run dev                # http://localhost:5000
 ```
@@ -118,66 +112,66 @@ npm install
 npm run dev                # http://localhost:3000
 ```
 
-`.env` mein zaroori cheezein:
-- **MONGO_URI** — MongoDB Atlas ka free cluster bana lein (mongodb.com/atlas), connection string yahan daalein.
-- **JWT_SECRET** — koi bhi lamba random string.
-- **SMTP_*** — email OTP/receipts k liye (Gmail App Password ya koi bhi SMTP provider).
-- **TWILIO_*** — SMS OTP k liye. *(Note: Pakistan k liye Twilio ki jagah local gateway jaise eSMS.pk ya Telenor/Jazz SMS API zyada sasta aur reliable hota hai — `backend/utils/sendSMS.js` mein sirf ye function replace karna hoga, baqi code same rahega)*.
+Required things in `.env`:
+- **MONGO_URI** — create a free MongoDB Atlas cluster (mongodb.com/atlas) and put the connection string here.
+- **JWT_SECRET** — any long random string.
+- **SMTP_*** — for email OTP/receipts (Gmail App Password or any SMTP provider).
+- **TWILIO_*** — for SMS OTP. *(Note: for Pakistan, a local gateway like eSMS.pk or the Telenor/Jazz SMS API is often cheaper and more reliable than Twilio — you'd only need to swap out this function in `backend/utils/sendSMS.js`, the rest of the code stays the same)*.
 
-Agar `.env` mein Twilio/SMTP set nahi hai to app crash nahi hoga — OTP terminal mein console log ho jayega (development mode), taake aap testing kar sakein bina real SMS bheje.
-
----
-
-## 🌐 Hostinger par Deploy karna
-
-Aapne bataya k Hostinger se hosting li hui hai — is baat ka khayal rakhein:
-
-- **Shared Hosting** (cPanel wali basic hosting) **Node.js apps ko support nahi karti** WordPress ki tarah. Agar aapka plan **Hostinger Cloud / Business / VPS** hai jisme "Node.js" ka option cPanel mein dikhta hai, to hum wahan directly deploy kar sakte hain (Hostinger ke "Setup Node.js App" feature se).
-- Agar sirf basic Shared Hosting hai, to best tareeqa ye hai:
-  1. **Frontend** (React build) → Hostinger ki shared hosting par `public_html` mein daal dein (ye static files hain, koi masla nahi).
-  2. **Backend** (Node/Express API) → kisi Node-supporting server par host karein: Hostinger VPS, Railway, Render, ya DigitalOcean. Phir apna domain `www.piarapakistan.com` → frontend static files, aur `api.piarapakistan.com` (subdomain) → backend server ki taraf point karein.
-  3. **Database** → MongoDB Atlas (free tier available) — Hostinger par database khud host karne ki zaroorat nahi.
-
-Jab hum is stage par pohanchein, main aapko exact step-by-step (screenshots ki tarah) guide karwa dunga k Hostinger control panel mein kya click karna hai — abhi ye batayein k aapka plan Cloud/VPS hai ya sirf Shared Hosting, taake sahi tareeqa bata sakoon.
+If Twilio/SMTP aren't set in `.env`, the app won't crash — the OTP is simply logged to the console (development mode), so you can test without sending real SMS.
 
 ---
 
-## 🐙 GitHub par Upload karna
+## 🌐 Deploying to Hostinger
 
-Is zip mein `.git` folder pehle se maujood hai (ek local repo, pehle commit ke saath), taake aap seedha GitHub par push kar sakein — dobara `git init` karne ki zaroorat nahi.
+Keep the following in mind since you've purchased hosting from Hostinger:
 
-1. **GitHub par naya repository banayein** — github.com par login karein → "New repository" → naam dein (jaise `piarapakistan`) → **"Add a README file" ka option UNCHECK rakhein** (kyunke hamari zip mein pehle se README hai) → "Create repository".
-2. GitHub aapko ek URL dega jaisa: `https://github.com/aapka-username/piarapakistan.git`
-3. Apne computer par terminal/Git Bash khol kar is zip ko extract karein, phir folder ke andar ye commands chalayein:
+- **Shared Hosting** (basic cPanel hosting) **does not support Node.js apps**, unlike WordPress. If your plan is **Hostinger Cloud / Business / VPS** with a "Node.js" option visible in cPanel, we can deploy directly there (using Hostinger's "Setup Node.js App" feature).
+- If you only have basic Shared Hosting, the best approach is:
+  1. **Frontend** (React build) → place it in `public_html` on Hostinger's shared hosting (these are static files, no problem there).
+  2. **Backend** (Node/Express API) → host it on a Node-supporting server: Hostinger VPS, Railway, Render, or DigitalOcean. Then point your domain `www.piarapakistan.com` → the frontend static files, and `api.piarapakistan.com` (subdomain) → the backend server.
+  3. **Database** → MongoDB Atlas (free tier available) — no need to host a database on Hostinger yourself.
+
+When we reach this stage, I'll walk you through the exact step-by-step (like screenshots) of what to click in the Hostinger control panel — for now, let me know whether your plan is Cloud/VPS or just Shared Hosting, so I can point you to the right approach.
+
+---
+
+## 🐙 Uploading to GitHub
+
+This zip already includes a `.git` folder (a local repo with an initial commit), so you can push straight to GitHub — no need to run `git init` again.
+
+1. **Create a new repository on GitHub** — log in to github.com → "New repository" → give it a name (e.g. `piarapakistan`) → **leave the "Add a README file" option UNCHECKED** (since our zip already has a README) → "Create repository".
+2. GitHub will give you a URL like: `https://github.com/your-username/piarapakistan.git`
+3. On your computer, open a terminal/Git Bash, extract this zip, then run these commands inside the folder:
    ```bash
    cd piarapakistan
-   git remote add origin https://github.com/aapka-username/piarapakistan.git
+   git remote add origin https://github.com/your-username/piarapakistan.git
    git push -u origin main
    ```
-4. GitHub username/password mangega — password ki jagah aapko **Personal Access Token (PAT)** use karna hoga (GitHub ab plain password se push allow nahi karta). Token banane ka tareeqa: GitHub → Settings → Developer settings → Personal access tokens → Generate new token (classic) → `repo` scope select karein → generate → is token ko password ki jagah paste karein.
-5. Push ho jane ke baad aapka pura code GitHub repository mein nazar aayega.
+4. It will ask for your GitHub username/password — instead of a password, you'll need to use a **Personal Access Token (PAT)** (GitHub no longer allows pushing with a plain password). To create one: GitHub → Settings → Developer settings → Personal access tokens → Generate new token (classic) → select the `repo` scope → generate → paste this token in place of the password.
+5. Once pushed, your full code will be visible in the GitHub repository.
 
-⚠️ Agar aapke paas terminal/Git install nahi hai, GitHub ki website se bhi seedha **"uploading an existing file"** (drag-and-drop) se files upload ho sakti hain — lekin us tareeqe mein `.git` history nahi jaati, sirf files jati hain (deployment ke liye ye bhi kaafi hai).
+⚠️ If you don't have terminal/Git installed, you can also upload files directly from the GitHub website using **"uploading an existing file"** (drag-and-drop) — though that method doesn't carry over the `.git` history, only the files themselves (which is still enough for deployment).
 
-## 🔗 Hostinger ko GitHub se Connect karna
+## 🔗 Connecting Hostinger to GitHub
 
-Ye sirf tab kaam karta hai jab aapka Hostinger plan **Cloud, Business, ya VPS** ho (Node.js support wala) — Shared Hosting mein ye option nahi hota.
+This only works if your Hostinger plan is **Cloud, Business, or VPS** (with Node.js support) — this option doesn't exist on Shared Hosting.
 
-1. Hostinger **hPanel** → **Advanced** → **"Setup Node.js App"** kholein.
-2. "Create Application" par click karein → Node.js version select karein (18 ya 20) → Application root folder set karein (jaise `piarapakistan-backend`).
-3. Wahan ek option hota hai **"Git"** ya **"Connect to Git repository"** — ismein apna GitHub repo URL daalein aur branch `main` select karein.
-4. Startup file set karein: `backend/server.js` (agar aapne pura repo connect kiya hai) ya sirf `server.js` (agar backend folder ko alag repo banaya).
-5. Environment variables (.env values) hPanel ke Node.js app settings mein manually add karni hongi — MongoDB URI, JWT secret, JazzCash/Easypaisa credentials, etc. (`.env` file khud GitHub par push NAHI hoti, security ke liye `.gitignore` mein hai).
-6. Frontend (React build) ke liye: `frontend` folder mein `npm run build` chalayein → `frontend/dist` ka content Hostinger ke `public_html` mein daal dein (ya isi Git connection se static deploy setup karein, agar Hostinger support karta ho).
-7. Domain `www.piarapakistan.com` ko frontend (static `dist`) se point karein, aur ek subdomain jaisa `api.piarapakistan.com` ko backend Node app se point karein.
+1. Open Hostinger **hPanel** → **Advanced** → **"Setup Node.js App"**.
+2. Click "Create Application" → select the Node.js version (18 or 20) → set the application root folder (e.g. `piarapakistan-backend`).
+3. There's an option there called **"Git"** or **"Connect to Git repository"** — enter your GitHub repo URL and select the `main` branch.
+4. Set the startup file: `backend/server.js` (if you connected the whole repo) or just `server.js` (if the backend folder is its own separate repo).
+5. Environment variables (the `.env` values) need to be added manually in the hPanel Node.js app settings — MongoDB URI, JWT secret, JazzCash/Easypaisa credentials, etc. (the `.env` file itself is NOT pushed to GitHub, it's in `.gitignore` for security).
+6. For the frontend (React build): run `npm run build` inside the `frontend` folder → put the contents of `frontend/dist` into Hostinger's `public_html` (or set up a static deploy through the same Git connection, if Hostinger supports it).
+7. Point the domain `www.piarapakistan.com` to the frontend (static `dist`), and a subdomain like `api.piarapakistan.com` to the backend Node app.
 
-**Aapko batana hai:** jab aap Hostinger hPanel khol kar "Setup Node.js App" section dekh len (Advanced ke neeche) — agar wo option maujood hai to Cloud/VPS confirm ho jayega aur main step-by-step (exact clicks) guide kar dunga.
+**Let me know:** once you open Hostinger hPanel and check whether the "Setup Node.js App" section exists (under Advanced) — if it does, that confirms Cloud/VPS, and I'll guide you through the exact clicks step by step.
 
 ---
 
-## 🗺️ Agle Phases (roadmap)
+## 🗺️ Roadmap
 
-| Phase | Kya banega | Status |
+| Phase | What It Builds | Status |
 |---|---|---|
 | **1** | Auth, Registration, KYC upload, OTP, Login | ✅ Done |
 | **2** | Categories, Service/Product listing, Search (nearby-first), Seller & Shop dashboards | ✅ Done |
@@ -186,112 +180,105 @@ Ye sirf tab kaam karta hai jab aapka Hostinger plan **Cloud, Business, ya VPS** 
 | **5** | Full Admin Panel — KYC approval UI, fraud flagging, complaint/help-center resolution, full control | ✅ Done |
 | **6** | Live chat + chatbot, Urdu/English language toggle, online payment gateway (JazzCash/Easypaisa) integration | ✅ Done |
 
-Sab 6 phases mukammal hain — ye ab ek full-featured multivendor marketplace hai, jaisa aapne shuru mein manga tha. Baqi jo bacha hai wo hai: **real payment gateway merchant account** haasil karna (JazzCash/Easypaisa se), aur **Hostinger par deploy** karna.
+All 6 phases are complete — this is now a full-featured multivendor marketplace, just as originally envisioned. What's left is: getting a **real payment gateway merchant account** (from JazzCash/Easypaisa), and **deploying to Hostinger**.
 
-## 💬 Phase 6 mein kya add hua (Live Chat + Language + Payments)
+## 💬 Live Chat, Language & Payments
 
-- **Live Chat** — Buyer kisi bhi listing se seedha seller ko message kar sakta hai (real-time,
-  Socket.io se). Navbar mein "Messages" icon se poora inbox milta hai. Ek **Quick Help Assistant**
-  bhi hai (keyword-based FAQ bot, koi external AI cost nahi) jo common sawalon (order kaise karein,
-  seller kaise banein, commission kya hai, waghera) ka fori jawab deta hai.
-- **Urdu/English Toggle** — Navbar mein globe/language icon se poori site Urdu (proper script,
-  right-to-left) ya English mein switch ho sakti hai. Translation system `src/i18n/translations.js`
-  mein hai — naye strings translate karne ke liye bas wahan add karein.
-- **Online Payment (JazzCash / Easypaisa)** — Checkout par ab "Online Payment" fully kaam karta hai:
-  - **JazzCash**: hosted checkout (secure hash ke sath) — buyer ko seedha JazzCash ke payment page
-    par bhej deta hai.
-  - **Easypaisa**: Mobile Account (MA) transaction — buyer apna Easypaisa number daalta hai.
-  - **Real merchant credentials abhi nahi hain** — jab tak `.env` mein `JAZZCASH_*` ya
-    `EASYPAISA_*` values nahi daalte, system khud-b-khud **Test/Mock Mode** mein chalta hai
-    (ek "Simulate Payment" screen dikhati hai) taake poora checkout flow test kiya ja sake.
-    Real JazzCash/Easypaisa merchant account milte hi, `.env` mein credentials daal dein — baqi
-    code already tayyar hai, kuch aur badalna nahi paray ga.
+- **Live Chat** — A buyer can message a seller directly from any listing (real-time,
+  via Socket.io). The "Messages" icon in the navbar opens the full inbox. There's also a **Quick Help Assistant**
+  (a keyword-based FAQ bot, no external AI cost) that instantly answers common questions (how to place an order,
+  how to become a seller, what commission is, etc.).
+- **Urdu/English Toggle** — The globe/language icon in the navbar switches the whole site between Urdu (proper script,
+  right-to-left) and English. The translation system lives in `src/i18n/translations.js` —
+  to translate new strings, just add them there.
+- **Online Payment (JazzCash / Easypaisa)** — Checkout now fully supports "Online Payment":
+  - **JazzCash**: hosted checkout (with a secure hash) — takes the buyer straight to JazzCash's payment page.
+  - **Easypaisa**: Mobile Account (MA) transaction — the buyer enters their Easypaisa number.
+  - **No real merchant credentials yet** — until you fill in `JAZZCASH_*` or
+    `EASYPAISA_*` values in `.env`, the system automatically runs in **Test/Mock Mode**
+    (it shows a "Simulate Payment" screen) so the full checkout flow can be tested.
+    Once you get a real JazzCash/Easypaisa merchant account, just add the credentials to `.env` — the rest of the
+    code is already ready, nothing else needs to change.
 
-## 💰 Commission — Percent ya Fixed PKR (dono options)
+## 💰 Commission — Percentage or Fixed PKR (Both Options)
 
-Admin ab commission **do tareeqon** mein se koi bhi choose kar sakta hai (Admin Panel → Commission):
-- **Percentage (%)** — jaise har order ka 10%
-- **Fixed Amount (Rs.)** — jaise har order par flat Rs. 50, order chota ho ya bara
+Admin can now choose between **two commission methods** (Admin Panel → Commission):
+- **Percentage (%)** — e.g. 10% of every order
+- **Fixed Amount (Rs.)** — e.g. a flat Rs. 50 per order, regardless of order size
 
-Ye **sirf admin (website owner) hi set/edit** kar sakta hai — global default ke alawa kisi khaas
-seller ke liye alag override bhi laga sakte hain. **Commission sirf admin aur us seller ko dikhta hai
-jis ka wo order hai** — buyer ko order ki koi bhi jagah (order history, email/SMS receipt) commission
-nazar nahi ata, sirf total amount dikhta hai. Ye automatically har order par calculate ho kar seller
-ke "Orders" dashboard mein khud show ho jata hai, koi extra step nahi.
+This can be **set/edited only by the admin (website owner)** — besides the global default, a specific
+seller can also have a separate override applied. **Commission is only visible to the admin and the seller
+whose order it is** — the buyer never sees commission anywhere on the order (order history, email/SMS receipt);
+they only see the total amount. It's automatically calculated on every order and shown right in the seller's
+"Orders" dashboard, with no extra step needed.
 
-## 🛡️ Phase 5 mein kya add hua (Admin Panel)
+## 🛡️ Admin Panel
 
-`node seedAdmin.js` se bane admin account se login karein — Navbar mein **"Admin Panel"** link
-dikhega (`/admin`). Ab poora control ek jagah se:
+Log in with the admin account created via `node seedAdmin.js` — an **"Admin Panel"** link will show
+in the navbar (`/admin`). Everything can now be controlled from one place:
 
-- **Dashboard** — total users, buyers/sellers/shops ka breakdown, active listings, orders,
-  aur sab se important: **platform ki total commission earning** aur total sales volume (GMV).
-- **KYC Approvals** — pending sellers/shops ki ID card (front + back) seedhi dekh kar
-  **Approve / Reject** karein — ab admin controller se hi manually MongoDB mein jaane ki
-  zaroorat nahi (Phase 2 ka temporary tareeqa yahan replace ho gaya).
-- **Users** — sab users search/filter karein (role se), kisi ko **suspend/unsuspend** karein
-  (fraud pakde jaane par) — suspend hote hi wo login nahi kar sakta.
-- **Listings** — koi bhi listing pause/activate ya delete karein (moderation).
-- **Orders** — poori platform ke saare orders ek jagah, status aur commission breakdown ke sath.
-- **Commission** — global default % set karein, ya kisi khaas seller ke liye alag % (override) set karein.
-- **Help Center** — users ki complaints/fraud reports dekhein, jawab dein, **resolved** mark karein.
-  Har logged-in user apna complaint `/contact` (ab "Help" page) se file kar sakta hai aur uska
-  status track kar sakta hai.
+- **Dashboard** — total users, breakdown by buyers/sellers/shops, active listings, orders,
+  and most importantly: **the platform's total commission earnings** and total sales volume (GMV).
+- **KYC Approvals** — view a pending seller's/shop's ID card (front + back) directly and
+  **Approve / Reject** them — no more need to go into MongoDB manually (the old
+  temporary workaround has been replaced by this).
+- **Users** — search/filter all users (by role), **suspend/unsuspend** anyone
+  (if fraud is detected) — once suspended, they can no longer log in.
+- **Listings** — pause/activate or delete any listing (moderation).
+- **Orders** — every order on the platform in one place, with status and commission breakdown.
+- **Commission** — set the global default %, or set a separate % (override) for a specific seller.
+- **Help Center** — view users' complaints/fraud reports, respond, and mark them **resolved**.
+  Any logged-in user can file a complaint from `/contact` (now the "Help" page) and
+  track its status.
 
-> Suspend hone wale user ko login karne par saaf message milta hai; unke active orders/listings
-> khud delete nahi hote — admin decide karega unka kya karna hai (Listings/Orders panel se).
+> A suspended user gets a clear message when trying to log in; their active orders/listings
+> aren't automatically deleted — the admin decides what to do with them (from the Listings/Orders panel).
 
 
-## 🛒 Phase 4 mein kya add hua (Cart + Orders + Commission)
+## 🛒 Cart, Orders & Commission
 
-- **Cart** — Buyer products cart mein add kar sakta hai (quantity ke sath), services k liye
-  "Abhi Book Karein" seedha booking bana deta hai. Cart abhi browser mein (`localStorage`)
-  save hoti hai — jab tak checkout nahi karte, koi backend record nahi banta.
-- **Checkout** — Delivery address, city, notes, aur payment method (**Cash on Delivery** abhi
-  live hai; **Online Payment — JazzCash/Easypaisa** ka option UI mein dikhta hai lekin "jald
-  aa raha hai" — asal gateway integration Phase 6 mein hoga).
-- **Order flow** — Har order ka apna `orderNumber` (e.g. `PP-000123`), status pipeline: **pending
-  → confirmed → in_progress → completed** (ya **cancelled**). Seller apne "Orders" dashboard se
-  status update karta hai; buyer ko har change par SMS jata hai.
-- **Commission (PKR)** — Har order par automatically calculate hoti hai:
-  - Pehle seller ka individual override check hota hai (`User.commissionPercent`)
-  - Warna platform ka **global default** (`PlatformSettings`, shuru mein 10%) use hota hai
-  - Admin dono ko in endpoints se control kar sakta hai:
+- **Cart** — Buyers can add products to the cart (with quantity); for services,
+  "Book Now" creates a booking directly. The cart is currently saved in the browser (`localStorage`) —
+  no backend record is created until checkout.
+- **Checkout** — Delivery address, city, notes, and payment method (**Cash on Delivery** is
+  live; **Online Payment — JazzCash/Easypaisa** is fully integrated too, see above).
+- **Order flow** — Every order has its own `orderNumber` (e.g. `PP-000123`), with a status pipeline: **pending
+  → confirmed → in_progress → completed** (or **cancelled**). Sellers update
+  status from their "Orders" dashboard; the buyer gets an SMS on every change.
+- **Commission (PKR)** — Automatically calculated on every order:
+  - First, the seller's individual override is checked (`User.commissionType`/`commissionPercent`/`commissionFixedAmount`)
+  - Otherwise, the platform's **global default** (`PlatformSettings`, 10% to start) is used
+  - Admin can control both via these endpoints:
     - `GET/PUT /api/admin/commission` — global default
-    - `PUT /api/admin/users/:userId/commission` — kisi specific seller ke liye override
-  - Seller apne dashboard mein har order par apna **exact payout** (total − commission) dekh sakta hai.
-- **Receipts** — Order place hote hi buyer ko **email (HTML receipt)** aur **SMS** dono jate hain
-  (order number, item, total, payment method, address ke sath) — jaisa aapne mangwaya tha.
-- **Ratings/Reviews** — Sirf **completed** order par, sirf ek dafa, buyer 1-5 stars + comment de
-  sakta hai. Listing aur seller ki overall rating automatically update hoti hai.
-- **Stock handling** — Product order hone par stock khud kam hota hai; order cancel hone par
-  wapas stock mein add ho jata hai.
-
-> Payment abhi sirf **Cash on Delivery** se pura kaam karta hai. Online payment (JazzCash/Easypaisa)
-> ka button UI mein hai lekin disabled — Phase 6 mein real gateway lagayenge.
+    - `PUT /api/admin/users/:userId/commission` — override for a specific seller
+  - Sellers can see their **exact payout** (total − commission) for every order in their dashboard.
+- **Receipts** — As soon as an order is placed, the buyer gets both an **email (HTML receipt)** and an **SMS**
+  (with order number, item, total, payment method, and address).
+- **Ratings/Reviews** — Only on a **completed** order, only once, the buyer can leave 1-5 stars + a comment.
+  The listing's and seller's overall rating updates automatically.
+- **Stock handling** — Stock automatically decreases when a product is ordered; it's added back
+  if the order is cancelled.
 
 
-## 🗺️ Phase 3 mein kya add hua (Map)
+## 🗺️ Map
 
-- **Leaflet + OpenStreetMap** use kiya hai — bilkul **free**, koi API key ya billing setup
-  nahi chahiye (Google Maps ki tarah paid nahi). Production mein zyada traffic par chahein to
-  ek paid tile provider (MapTiler / Mapbox) laga sakte hain — sirf `MapView.jsx` mein tile URL
-  badalna hoga, baqi code same rahega.
-- **Register page** ab location detect karta hai (button: "Map par apni location set karein") —
-  isi location se listing ka pin set hota hai taake nearby-search sahi kaam kare.
-- **Search page** par **List / Map toggle** — Map view mein sab listings apni city/area ke
-  pins ke sath dikhte hain, pin click kar ke seedha listing par ja sakte hain.
-- **Listing detail page** par bhi ek chota map hai jo us service/shop ki exact location dikhata hai.
+- Uses **Leaflet + OpenStreetMap** — completely **free**, no API key
+  or billing setup needed (unlike paid Google Maps). If you want to switch to a paid tile
+  provider (MapTiler / Mapbox) for higher production traffic later, you'd only need to
+  change the tile URL in `MapView.jsx`, the rest of the code stays the same.
+- The **Register page** detects location (button: "Set your location on the map") —
+  this location is used to set the listing's pin so nearby-search works correctly.
+- The **Search page** has a **List / Map toggle** — the Map view shows all listings with
+  pins for their city/area, and clicking a pin takes you straight to that listing.
+- The **Listing detail page** also has a small map showing that service's/shop's exact location.
 
-> Note: agar koi purana test-user bina location ke register hua tha, uski listing map par nahi
-> dikhegi jab tak wo profile update kar ke location set na kare — ye normal hai.
-
-Har phase complete hone ke baad main isi tarah working code, test karke, deliver karunga.
+> Note: if an old test user registered without a location, their listing won't
+> show on the map until they update their profile and set a location — this is normal.
 
 ---
 
 ## 🔒 Security Notes (important)
 
-- Is package mein `uploads/` folder **publicly accessible** hai testing k liye. **Production mein ID card images ko private rakhna zaroori hai** — sirf admin access kar sake. Phase 5 (Admin Panel) mein isay secure route ke zariye serve karenge (public static serving hata denge).
-- `.env` file kabhi bhi GitHub ya kisi public jagah share na karein.
-- CNIC number aur bank account number database mein plaintext hain filhal — production se pehle inhein encrypt karna recommend karta hoon (Phase 5 mein add karunga).
+- In this package, the `uploads/` folder is **publicly accessible** for testing purposes. **In production, ID card images must be kept private** — accessible only to the admin. This is served through a secure route in the Admin Panel (public static serving has been removed).
+- Never share the `.env` file on GitHub or anywhere public.
+- CNIC numbers and bank account numbers are currently stored in plaintext in the database — I'd recommend encrypting these before going to production.
