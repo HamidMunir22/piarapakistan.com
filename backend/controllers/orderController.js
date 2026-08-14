@@ -109,6 +109,27 @@ const createOrder = async (req, res) => {
       `PiaraPakistan: Aapka order ${order.orderNumber} (${order.listingTitleSnapshot}) confirm ho gaya. Total: ${formatPKR(order.totalAmount)}. Shukriya!`
     );
 
+    // ---- Notify the seller too: a new order needs their attention ----
+    const sellerNoticeHtml = `
+      <h2>New Order Received — ${order.orderNumber}</h2>
+      <p>Assalam-o-Alaikum ${seller.firstName},</p>
+      <p>Aapko ek naya order mila hai:</p>
+      <table style="border-collapse:collapse;width:100%;max-width:420px">
+        <tr><td style="padding:6px 0">Item</td><td style="padding:6px 0"><b>${order.listingTitleSnapshot}</b></td></tr>
+        <tr><td style="padding:6px 0">Quantity</td><td style="padding:6px 0">${order.quantity}</td></tr>
+        <tr><td style="padding:6px 0">Total Amount</td><td style="padding:6px 0"><b>${formatPKR(order.totalAmount)}</b></td></tr>
+        <tr><td style="padding:6px 0">Payment</td><td style="padding:6px 0">${paymentMethod === "cod" ? "Cash on Delivery" : "Online"}</td></tr>
+        <tr><td style="padding:6px 0">Delivery Address</td><td style="padding:6px 0">${deliveryAddress}, ${city}</td></tr>
+      </table>
+      <p>Order confirm/process karne ke liye apne "Orders" dashboard par jayein.</p>
+      <p>— Team PiaraPakistan</p>
+    `;
+    sendEmail(seller.email, `New Order Received — ${order.orderNumber}`, sellerNoticeHtml);
+    sendSMS(
+      seller.phone,
+      `PiaraPakistan: Naya order ${order.orderNumber} (${order.listingTitleSnapshot}) mila hai. Total: ${formatPKR(order.totalAmount)}. Dashboard check karein.`
+    );
+
     return res.status(201).json({
       success: true,
       message: "Order place ho gaya",
@@ -186,10 +207,26 @@ const updateOrderStatus = async (req, res) => {
 
     await order.save();
 
-    // Notify buyer of status change
+    // Notify buyer of status change — SMS + email so it's never missed
     const buyer = await User.findById(order.buyer);
     if (buyer) {
       sendSMS(buyer.phone, `PiaraPakistan: Order ${order.orderNumber} ka status ab "${status}" hai.`);
+      const statusLabels = {
+        confirmed: "Confirmed",
+        in_progress: "In Progress",
+        completed: "Completed",
+        cancelled: "Cancelled",
+      };
+      sendEmail(
+        buyer.email,
+        `Order ${order.orderNumber} — Status Update: ${statusLabels[status] || status}`,
+        `<h2>Order Update — ${order.orderNumber}</h2>
+         <p>Assalam-o-Alaikum ${buyer.firstName},</p>
+         <p>Aapke order <b>${order.listingTitleSnapshot}</b> ka status ab <b>${statusLabels[status] || status}</b> hai.</p>
+         ${status === "cancelled" ? `<p>Reason: ${order.cancelReason}</p>` : ""}
+         <p>Details "My Orders" page par dekhi ja sakti hain.</p>
+         <p>— Team PiaraPakistan</p>`
+      );
     }
 
     return res.json({ success: true, message: "Order status updated", order });
