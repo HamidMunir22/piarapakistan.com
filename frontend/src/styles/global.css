@@ -1036,28 +1036,65 @@ button {
   }
 }
 
-/* At >=900px: show the full desktop nav, hide the hamburger entirely */
+/* At >=900px: show the full desktop nav, hide the hamburger entirely.
+   IMPORTANT: .navbar has flex-wrap: wrap (needed so the mobile slide-down
+   panel can drop to its own row below 900px). But that same wrap rule was
+   also wrapping the desktop row itself once brand + links + search + actions
+   got too wide to fit — which is what pushed the language button ("EN") down
+   onto its own line and made the dropdown look shifted inward. Fix: force
+   nowrap on the main row at desktop widths, keep brand/links/actions from
+   shrinking, and let the search box flex/shrink instead so it absorbs any
+   squeeze first. */
 @media (min-width: 900px) {
+  .navbar {
+    flex-wrap: nowrap;
+  }
+  .navbar-brand {
+    flex-shrink: 0;
+  }
   .navbar-links-desktop {
     display: flex;
     gap: 22px;
     align-items: center;
     font-weight: 500;
     color: var(--pp-ink);
+    flex-shrink: 0;
   }
   .navbar-search-desktop {
     display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 240px;
+    margin: 0 12px;
+  }
+  .navbar-search-desktop input {
+    width: 100%;
+    min-width: 0;
   }
   .navbar-actions-desktop {
     display: flex;
     gap: 12px;
     align-items: center;
+    flex-shrink: 0;
   }
   .navbar-mobile-actions {
     display: none;
   }
   .navbar-mobile-panel {
     display: none !important;
+  }
+}
+
+/* Between 900px and ~1180px things get tight (brand + 6 links + search +
+   actions) — trim the link gap and hide the search box before anything is
+   forced to wrap, so the language dropdown never gets pushed off the row. */
+@media (min-width: 900px) and (max-width: 1180px) {
+  .navbar-links-desktop {
+    gap: 12px;
+    font-size: 13.5px;
+  }
+  .navbar-search-desktop {
+    display: none;
   }
 }
 

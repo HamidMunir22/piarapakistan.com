@@ -351,6 +351,16 @@ const loginUser = async (req, res) => {
     user.lastLoginAt = new Date();
     await user.save();
 
+    // ---- Welcome-back email on every successful login (non-blocking) ----
+    sendEmail(
+      user.email,
+      "Welcome back to PiaraPakistan!",
+      `<h2>Welcome back, ${user.firstName}!</h2>
+       <p>You just logged in to your PiaraPakistan account.</p>
+       <p style="color:#888;font-size:13px;">If this wasn't you, please reset your password immediately and contact support.</p>
+       <p>— Team PiaraPakistan</p>`
+    );
+
     const token = generateToken(user._id, user.role);
     return res.status(200).json({
       success: true,
