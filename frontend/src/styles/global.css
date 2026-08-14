@@ -1510,3 +1510,185 @@ button {
     animation: none;
   }
 }
+
+/* ==========================================================================
+   Home CTA band (vivid orange -> deep green, matches footer band below it)
+   ========================================================================== */
+
+.home-cta-band {
+  background: linear-gradient(120deg, var(--pp-orange), var(--pp-orange-dark));
+  color: white;
+  text-align: center;
+  padding: 56px 20px;
+}
+
+.home-cta-band h2 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  margin: 0 0 8px;
+}
+
+.home-cta-band p {
+  opacity: 0.95;
+  margin: 0 0 22px;
+  font-size: 15px;
+}
+
+.btn-block-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 30px;
+  border-radius: 999px;
+  background: white;
+  color: var(--pp-orange-dark);
+  font-weight: 700;
+  font-size: 14.5px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+.btn-block-inline:hover {
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   Extra 3D polish on auth pages (Register / Login) — subtle tilt + glow
+   ========================================================================== */
+
+.auth-side {
+  perspective: 1000px;
+}
+
+.auth-side h2,
+.auth-side p {
+  position: relative;
+}
+
+.auth-card {
+  transform-style: preserve-3d;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.auth-card:hover {
+  box-shadow: var(--pp-shadow-lift);
+}
+
+.role-tab {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.role-tab.active {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(240, 129, 42, 0.18);
+}
+
+/* ==========================================================================
+   Navbar link hover/active states + language dropdown
+   ========================================================================== */
+
+.navbar-links a,
+.navbar-links-desktop a {
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.navbar-links-desktop a:hover {
+  background: var(--pp-cream);
+}
+
+.navbar-links-desktop a.active {
+  color: var(--pp-green-dark);
+  font-weight: 700;
+  background: var(--pp-green-soft);
+}
+
+.navbar-mobile-panel a.active {
+  color: var(--pp-green-dark);
+  font-weight: 700;
+  background: var(--pp-green-soft);
+}
+
+.lang-menu {
+  position: relative;
+}
+
+.lang-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 149;
+}
+
+.lang-menu-list {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--pp-white);
+  border: 1px solid var(--pp-border);
+  border-radius: 12px;
+  box-shadow: var(--pp-shadow-lift);
+  min-width: 170px;
+  padding: 6px;
+  z-index: 150;
+  animation: pp-slide-down 0.15s ease;
+}
+
+.lang-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--pp-ink);
+}
+
+.lang-menu-item:hover {
+  background: var(--pp-cream);
+}
+
+.lang-menu-item.active {
+  color: var(--pp-green-dark);
+  background: var(--pp-green-soft);
+}
+
+.navbar-mobile-lang-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--pp-muted);
+  margin: 10px 8px 2px;
+}
+
+.navbar-mobile-lang-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.navbar-mobile-lang-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 8px;
+  border-radius: 8px;
+  border: none;
+  background: var(--pp-cream);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--pp-ink);
+}
+
+.navbar-mobile-lang-option.active {
+  color: var(--pp-green-dark);
+  background: var(--pp-green-soft);
+}
