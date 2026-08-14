@@ -1,5 +1,8 @@
 import api from "./client";
 
+// ---- Public reference data ----
+export const fetchBanks = () => api.get("/banks").then((res) => res.data.banks);
+
 // ---- Dashboard ----
 export const fetchAdminStats = () => api.get("/admin/stats").then((res) => res.data.stats);
 

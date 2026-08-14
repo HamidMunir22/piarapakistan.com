@@ -14,9 +14,9 @@ const CATEGORY_LABELS = {
 
 const STATUS_LABELS = {
   open: "Open",
-  in_progress: "Jawab mil gaya",
-  resolved: "Resolve ho gaya",
-  rejected: "Reject",
+  in_progress: "In Progress",
+  resolved: "Resolved",
+  rejected: "Rejected",
 };
 
 const HelpCenter = () => {
@@ -54,9 +54,9 @@ const HelpCenter = () => {
       <div className="container" style={{ padding: "60px 20px", textAlign: "center" }}>
         <h2>Help Center</h2>
         <p style={{ color: "var(--pp-muted)", marginBottom: 20 }}>
-          Complaint file karne ya fraud report karne ke liye pehle login karein.
+          Please login to file a complaint or report fraud.
         </p>
-        <Link to="/login" className="btn btn-primary">Login Karein</Link>
+        <Link to="/login" className="btn btn-primary">Login</Link>
       </div>
     );
   }
@@ -65,10 +65,10 @@ const HelpCenter = () => {
     <div className="container" style={{ padding: "36px 20px 60px", maxWidth: 640 }}>
       <h1 style={{ fontSize: 26, marginBottom: 6 }}>Help Center</h1>
       <p style={{ color: "var(--pp-muted)", fontSize: 13.5, marginBottom: 24 }}>
-        Koi problem hui ho, fraud ka shak ho, ya sawal ho — yahan batayein, hum jald jawab dein ge.
+        Facing a problem, suspect fraud, or have a question? Let us know here and we'll respond quickly.
       </p>
 
-      {success && <div className="alert alert-success">Aapki complaint darj ho gayi. Hum jaldi review karein ge.</div>}
+      {success && <div className="alert alert-success">Your complaint has been submitted. We'll review it soon.</div>}
 
       <form onSubmit={handleSubmit} className="auth-card" style={{ marginBottom: 30 }}>
         <div className="field">
@@ -84,7 +84,7 @@ const HelpCenter = () => {
           <input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} required />
         </div>
         <div className="field">
-          <label>Tafseel</label>
+          <label>Details</label>
           <textarea
             rows={4}
             value={form.message}
@@ -93,13 +93,13 @@ const HelpCenter = () => {
           />
         </div>
         <button className="btn btn-primary btn-block" disabled={submitting}>
-          {submitting ? "Bhej rahe hain..." : "Complaint Bhejein"}
+          {submitting ? "Sending..." : "Submit Complaint"}
         </button>
       </form>
 
       {complaints.length > 0 && (
         <>
-          <h2 style={{ fontSize: 18, marginBottom: 12 }}>Aapki Complaints</h2>
+          <h2 style={{ fontSize: 18, marginBottom: 12 }}>Your Complaints</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {complaints.map((c) => (
               <div key={c._id} className="auth-card" style={{ padding: 16 }}>
@@ -112,7 +112,7 @@ const HelpCenter = () => {
                 <p style={{ fontSize: 13, color: "var(--pp-muted)", margin: "8px 0" }}>{c.message}</p>
                 {c.adminReply && (
                   <div style={{ background: "var(--pp-cream)", borderRadius: 8, padding: 10, fontSize: 13 }}>
-                    <b>Team ka jawab:</b> {c.adminReply}
+                    <b>Team's reply:</b> {c.adminReply}
                   </div>
                 )}
               </div>

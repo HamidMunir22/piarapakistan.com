@@ -1,8 +1,14 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
+import Footer from "./components/Footer.jsx";
+import Chatbot from "./components/Chatbot.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Home from "./pages/Home.jsx";
+import About from "./pages/About.jsx";
+import Contact from "./pages/Contact.jsx";
+import Terms from "./pages/Terms.jsx";
+import Privacy from "./pages/Privacy.jsx";
 import Register from "./pages/Register.jsx";
 import VerifyOtp from "./pages/VerifyOtp.jsx";
 import Login from "./pages/Login.jsx";
@@ -27,13 +33,6 @@ import AdminListings from "./pages/admin/Listings.jsx";
 import AdminOrders from "./pages/admin/Orders.jsx";
 import Commission from "./pages/admin/Commission.jsx";
 import AdminComplaints from "./pages/admin/Complaints.jsx";
-
-const Placeholder = ({ title }) => (
-  <div className="container" style={{ padding: "70px 20px", textAlign: "center" }}>
-    <h2>{title}</h2>
-    <p style={{ color: "var(--pp-muted)" }}>Ye page agle phase mein banega.</p>
-  </div>
-);
 
 function App() {
   return (
@@ -129,9 +128,14 @@ function App() {
           <Route path="commission" element={<Commission />} />
           <Route path="complaints" element={<AdminComplaints />} />
         </Route>
-        <Route path="/about" element={<Placeholder title="About Us" />} />
-        <Route path="/contact" element={<HelpCenter />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/help" element={<HelpCenter />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
       </Routes>
+      <Footer />
+      <Chatbot />
     </>
   );
 }

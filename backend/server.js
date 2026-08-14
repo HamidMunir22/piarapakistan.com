@@ -16,6 +16,7 @@ const complaintRoutes = require("./routes/complaintRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const { getCategories } = require("./controllers/listingController");
+const { BANKS } = require("./utils/banks");
 
 const app = express();
 const server = http.createServer(app);
@@ -65,6 +66,7 @@ app.use("/api/complaints", complaintRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/chat", chatRoutes);
 app.get("/api/categories", getCategories);
+app.get("/api/banks", (req, res) => res.json({ success: true, banks: BANKS })); // public, used by registration form
 
 app.get("/api/health", (req, res) => {
   res.json({ success: true, message: "PiaraPakistan API is running" });

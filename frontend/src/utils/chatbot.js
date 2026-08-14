@@ -5,33 +5,44 @@ const FAQ = [
   {
     keywords: ["order", "booking", "book"],
     reply:
-      "Order karne ke liye kisi bhi listing par jayein aur 'Abhi Book Karein' ya 'Cart mein Add Karein' dabayein. Checkout par address aur payment method choose karein.",
+      "To place an order, open any listing and tap 'Book Now' or 'Add to Cart'. Choose your address and payment method at checkout.",
   },
   {
-    keywords: ["seller", "kaise bane", "become seller", "sell"],
+    keywords: ["seller", "become a seller", "sell", "shop owner"],
     reply:
-      "Seller/Shop banne ke liye Register par jayein aur 'Service Seller' ya 'Shop Owner' select karein. ID card verify hone ke baad (admin approval) aap listing add kar sakte hain.",
+      "To become a Seller or Shop Owner, go to Register and select 'Service Seller' or 'Shop Owner'. After your ID is verified by our admin team (usually within 24 hours), you can start adding listings.",
   },
   {
     keywords: ["commission", "fee", "charges"],
-    reply: "Platform har order par ek chhota sa commission % leta hai jo order ki receipt par dikhta hai.",
+    reply: "The platform takes a small commission on each order, which is set by the admin and shown on the order receipt.",
   },
   {
-    keywords: ["payment", "jazzcash", "easypaisa", "cod", "cash"],
-    reply: "Aap Cash on Delivery ya Online Payment (JazzCash/Easypaisa) dono se pay kar sakte hain — checkout par choose karein.",
+    keywords: ["payment", "jazzcash", "easypaisa", "cod", "cash", "bank"],
+    reply: "You can pay with Cash on Delivery or Online Payment (JazzCash, Easypaisa, or bank transfer) — choose at checkout.",
   },
   {
-    keywords: ["complaint", "fraud", "scam", "shikayat"],
-    reply: "Help Center page (\"Help\" navbar mein) se apni complaint file karein — hamari team jald jawab degi.",
+    keywords: ["complaint", "fraud", "scam", "report"],
+    reply: "Please file a complaint from the Help Center page (in the navbar) — our team will respond as soon as possible.",
   },
   {
-    keywords: ["kyc", "id card", "verify", "verification"],
-    reply: "Seller/shop registration par CNIC aur ID card front-back tasveerein upload karni hoti hain. Admin approve karne ke baad listing add ho sakti hai.",
+    keywords: ["kyc", "id card", "verify", "verification", "selfie"],
+    reply:
+      "Sellers/shops must upload their CNIC front & back plus a selfie holding their ID card during registration. Once our admin approves it (usually within 24 hours), you can start listing.",
+  },
+  {
+    keywords: ["otp", "code", "sms"],
+    reply:
+      "Your verification code is sent by both SMS and email — if the SMS is delayed, check your email inbox (and spam folder) for the same code.",
+  },
+  {
+    keywords: ["password", "locked", "login"],
+    reply:
+      "For security, an account is temporarily locked for 30 minutes after 3 incorrect password attempts. Please try again later or reset your password.",
   },
 ];
 
 const DEFAULT_REPLY =
-  "Maazrat, mujhe iska jawab nahi pata. Behtar hoga aap Help Center se complaint file karein ya seller ko seedha message karein.";
+  "Sorry, I don't have an answer for that yet. Please file a complaint via the Help Center, or message the seller directly.";
 
 export const getBotReply = (message) => {
   const lower = message.toLowerCase();

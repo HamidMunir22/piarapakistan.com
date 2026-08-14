@@ -1,21 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
 import api from "../api/client";
-
-const CATEGORIES = [
-  "Electrician",
-  "AC Sale/Purchase & Repair",
-  "Plumber",
-  "Carpenter",
-  "Painter",
-  "Home Shifting",
-  "Electronics Shop",
-  "Mobile Repair",
-  "Tailor / Boutique",
-  "Grocery / General Store",
-  "Other",
-];
+import { fetchCategories } from "../api/listings";
+import { fetchBanks } from "../api/admin.js";
+import ReCaptcha from "../components/ReCaptcha.jsx";
 
 const initialState = {
   role: "buyer",
@@ -31,6 +20,7 @@ const initialState = {
   area: "",
   businessName: "",
   category: "",
+  customCategoryName: "",
   bankAccountTitle: "",
   bankAccountNumber: "",
   bankName: "",
@@ -38,16 +28,32 @@ const initialState = {
 
 const Register = () => {
   const [form, setForm] = useState(initialState);
-  const [files, setFiles] = useState({ idCardFrontImage: null, idCardBackImage: null, profilePicture: null });
+  const [files, setFiles] = useState({
+    idCardFrontImage: null,
+    idCardBackImage: null,
+    idCardSelfieImage: null,
+    profilePicture: null,
+  });
+  const [categories, setCategories] = useState([]);
+  const [banks, setBanks] = useState([]);
   const [coords, setCoords] = useState(null);
   const [locating, setLocating] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    fetchCategories().then(setCategories).catch(() => {});
+    fetchBanks().then(setBanks).catch(() => {});
+  }, []);
+
+  const isSellerOrShop = form.role === "seller" || form.role === "shop";
+
   const detectLocation = () => {
     if (!navigator.geolocation) {
-      setError("Aapka browser location detect nahi kar sakta");
+      setError("Your browser can't detect location");
       return;
     }
     setLocating(true);
@@ -58,13 +64,20 @@ const Register = () => {
       },
       () => {
         setLocating(false);
-        setError("Location access nahi mil saka. Browser settings mein allow karein.");
+        setError("Couldn't get your location. Please allow location access in your browser settings.");
       }
     );
   };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleRoleChange = (r) => {
+    // Reset terms acceptance when switching roles, since buyers never need
+    // to see the ID/selfie step, and a role switch should re-confirm intent.
+    setTermsAccepted(false);
+    setForm({ ...form, role: r });
   };
 
   const handleFile = (e) => {
@@ -76,12 +89,23 @@ const Register = () => {
     setError("");
 
     if (form.password !== form.confirmPassword) {
-      setError("Password aur confirm password match nahi kar rahe");
+      setError("Password and confirm password do not match");
       return;
     }
-    if (!files.idCardFrontImage || !files.idCardBackImage) {
-      setError("ID Card ki front aur back tasveer lazmi hai");
-      return;
+
+    if (isSellerOrShop) {
+      if (!termsAccepted) {
+        setError("Please accept the Terms & Conditions to continue");
+        return;
+      }
+      if (!files.idCardFrontImage || !files.idCardBackImage || !files.idCardSelfieImage) {
+        setError("ID card (front + back) and a selfie holding your ID card are required for sellers/shops");
+        return;
+      }
+      if (form.category === "other" && !form.customCategoryName.trim()) {
+        setError("Please type your service/product category");
+        return;
+      }
     }
 
     setLoading(true);
@@ -90,6 +114,8 @@ const Register = () => {
       Object.entries(form).forEach(([key, value]) => {
         if (key !== "confirmPassword") fd.append(key, value);
       });
+      fd.append("termsAccepted", isSellerOrShop ? "true" : "false");
+      if (recaptchaToken) fd.append("recaptchaToken", recaptchaToken);
       if (coords) {
         fd.append("latitude", coords.lat);
         fd.append("longitude", coords.lng);
@@ -104,35 +130,33 @@ const Register = () => {
 
       navigate("/verify-otp", { state: { phone: res.data.phone } });
     } catch (err) {
-      setError(err.response?.data?.message || "Registration mein masla hua, dobara koshish karein");
+      setError(err.response?.data?.message || "Registration failed, please try again");
     } finally {
       setLoading(false);
     }
   };
 
-  const isSellerOrShop = form.role === "seller" || form.role === "shop";
-
   return (
     <div className="auth-wrapper">
       <div className="auth-side">
-        <h2>Apni services ya shop, lakhon logon tak pohanchayein.</h2>
+        <h2>Bring your services or shop to millions of people.</h2>
         <p>
-          PiaraPakistan par register karein — buyer ho ya seller, har account
-          verify hota hai taake platform sab k liye mehfooz rahe.
+          Register on PiaraPakistan — buyer or seller — every account is verified so the platform stays safe for
+          everyone.
         </p>
       </div>
 
       <div className="auth-form-col">
         <div className="auth-card">
-          <h1>Account banayein</h1>
-          <p className="subtitle">Sirf 2 minute mein — mehfooz aur asaan</p>
+          <h1>Create Account</h1>
+          <p className="subtitle">Just 2 minutes — secure and simple</p>
 
           <div className="role-tabs">
             {["buyer", "seller", "shop"].map((r) => (
               <div
                 key={r}
                 className={`role-tab ${form.role === r ? "active" : ""}`}
-                onClick={() => setForm({ ...form, role: r })}
+                onClick={() => handleRoleChange(r)}
               >
                 {r === "buyer" ? "Buyer" : r === "seller" ? "Service Seller" : "Shop Owner"}
               </div>
@@ -168,7 +192,7 @@ const Register = () => {
               </div>
               <div className="field">
                 <label>Password</label>
-                <input type="password" name="password" value={form.password} onChange={handleChange} required />
+                <input type="password" name="password" value={form.password} onChange={handleChange} required minLength={6} />
               </div>
               <div className="field">
                 <label>Confirm Password</label>
@@ -180,60 +204,9 @@ const Register = () => {
                   required
                 />
               </div>
-            </div>
-
-            <div className="section-label">Verification (ID Card / CNIC)</div>
-            <div className="form-grid">
               <div className="field full">
-                <label>CNIC Number</label>
-                <input
-                  name="cnicNumber"
-                  placeholder="XXXXX-XXXXXXX-X"
-                  value={form.cnicNumber}
-                  onChange={handleChange}
-                  required
-                />
-                <span className="field-hint">Fraud rokne aur trust ke liye har user ki verification zaroori hai.</span>
-              </div>
-              <div className="field">
-                <label>ID Card - Front</label>
-                <label
-                  className={`file-upload-box ${files.idCardFrontImage ? "has-file" : ""}`}
-                  htmlFor="idFront"
-                >
-                  {files.idCardFrontImage ? files.idCardFrontImage.name : "Click to upload (jpg/png)"}
-                </label>
-                <input
-                  id="idFront"
-                  type="file"
-                  name="idCardFrontImage"
-                  accept="image/*"
-                  onChange={handleFile}
-                  style={{ display: "none" }}
-                  required
-                />
-              </div>
-              <div className="field">
-                <label>ID Card - Back</label>
-                <label className={`file-upload-box ${files.idCardBackImage ? "has-file" : ""}`} htmlFor="idBack">
-                  {files.idCardBackImage ? files.idCardBackImage.name : "Click to upload (jpg/png)"}
-                </label>
-                <input
-                  id="idBack"
-                  type="file"
-                  name="idCardBackImage"
-                  accept="image/*"
-                  onChange={handleFile}
-                  style={{ display: "none" }}
-                  required
-                />
-              </div>
-              <div className="field full">
-                <label>Profile Picture (optional)</label>
-                <label
-                  className={`file-upload-box ${files.profilePicture ? "has-file" : ""}`}
-                  htmlFor="profilePic"
-                >
+                <label>Profile Picture {!isSellerOrShop && "(optional)"}</label>
+                <label className={`file-upload-box ${files.profilePicture ? "has-file" : ""}`} htmlFor="profilePic">
                   {files.profilePicture ? files.profilePicture.name : "Click to upload"}
                 </label>
                 <input
@@ -264,20 +237,18 @@ const Register = () => {
               <div className="field full">
                 <button type="button" className="btn btn-secondary" onClick={detectLocation} disabled={locating}>
                   <MapPin size={15} />
-                  {locating ? "Location detect ho rahi hai..." : coords ? "Location set ho gayi ✓" : "Map par apni location set karein"}
+                  {locating ? "Detecting location..." : coords ? "Location set ✓" : "Set your location on the map"}
                 </button>
                 <span className="field-hint">
-                  Ye search/map par aapki listing sahi jagah dikhane ke liye zaroori hai — jitna qareeb, utna pehle aap
-                  buyers ko dikhein ge.
+                  This is used to show your listing on the map and in nearby search results — the closer you are,
+                  the higher you appear for buyers.
                 </span>
               </div>
             </div>
 
             {isSellerOrShop && (
               <>
-                <div className="section-label">
-                  {form.role === "shop" ? "Shop Details" : "Service Details"}
-                </div>
+                <div className="section-label">{form.role === "shop" ? "Shop Details" : "Service Details"}</div>
                 <div className="form-grid">
                   <div className="field full">
                     <label>{form.role === "shop" ? "Shop Name" : "Business / Service Name"}</label>
@@ -286,41 +257,149 @@ const Register = () => {
                   <div className="field full">
                     <label>Category</label>
                     <select name="category" value={form.category} onChange={handleChange} required>
-                      <option value="">Category chunein</option>
-                      {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
+                      <option value="">Select a category</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.label}
                         </option>
                       ))}
                     </select>
                   </div>
+                  {form.category === "other" && (
+                    <div className="field full">
+                      <label>Your Category Name</label>
+                      <input
+                        name="customCategoryName"
+                        placeholder="e.g. Pest Control, Event Decoration..."
+                        value={form.customCategoryName}
+                        onChange={handleChange}
+                        required
+                      />
+                      <span className="field-hint">
+                        Don't see your service/product above? Type it here instead.
+                      </span>
+                    </div>
+                  )}
+                  <div className="field full">
+                    <label>CNIC Number</label>
+                    <input
+                      name="cnicNumber"
+                      placeholder="XXXXX-XXXXXXX-X"
+                      value={form.cnicNumber}
+                      onChange={handleChange}
+                      required
+                    />
+                    <span className="field-hint">Required for seller/shop verification (fraud prevention).</span>
+                  </div>
                 </div>
 
-                <div className="section-label">Payment / Bank Details (payout ke liye)</div>
+                <div className="section-label">Payout Details</div>
                 <div className="form-grid">
                   <div className="field">
                     <label>Account Title</label>
                     <input name="bankAccountTitle" value={form.bankAccountTitle} onChange={handleChange} />
                   </div>
                   <div className="field">
-                    <label>Bank Name</label>
-                    <input name="bankName" value={form.bankName} onChange={handleChange} />
+                    <label>Bank / Wallet</label>
+                    <select name="bankName" value={form.bankName} onChange={handleChange}>
+                      <option value="">Select</option>
+                      {banks.map((b) => (
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="field full">
                     <label>Account / IBAN Number</label>
                     <input name="bankAccountNumber" value={form.bankAccountNumber} onChange={handleChange} />
                   </div>
                 </div>
+
+                <div className="tc-check">
+                  <input
+                    type="checkbox"
+                    id="tcAccept"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                  />
+                  <label htmlFor="tcAccept">
+                    I agree to the <Link to="/terms" target="_blank">Terms &amp; Conditions</Link> and{" "}
+                    <Link to="/privacy" target="_blank">Privacy Policy</Link>, and I understand my account will be
+                    reviewed (usually within 24 hours) before I can list services/products.
+                  </label>
+                </div>
+
+                {termsAccepted && (
+                  <>
+                    <div className="section-label">Identity Verification</div>
+                    <div className="form-grid">
+                      <div className="field">
+                        <label>ID Card - Front</label>
+                        <label className={`file-upload-box ${files.idCardFrontImage ? "has-file" : ""}`} htmlFor="idFront">
+                          {files.idCardFrontImage ? files.idCardFrontImage.name : "Click to upload (jpg/png)"}
+                        </label>
+                        <input
+                          id="idFront"
+                          type="file"
+                          name="idCardFrontImage"
+                          accept="image/*"
+                          onChange={handleFile}
+                          style={{ display: "none" }}
+                          required
+                        />
+                      </div>
+                      <div className="field">
+                        <label>ID Card - Back</label>
+                        <label className={`file-upload-box ${files.idCardBackImage ? "has-file" : ""}`} htmlFor="idBack">
+                          {files.idCardBackImage ? files.idCardBackImage.name : "Click to upload (jpg/png)"}
+                        </label>
+                        <input
+                          id="idBack"
+                          type="file"
+                          name="idCardBackImage"
+                          accept="image/*"
+                          onChange={handleFile}
+                          style={{ display: "none" }}
+                          required
+                        />
+                      </div>
+                      <div className="field full">
+                        <label>Selfie Holding Your ID Card</label>
+                        <label
+                          className={`file-upload-box ${files.idCardSelfieImage ? "has-file" : ""}`}
+                          htmlFor="idSelfie"
+                        >
+                          {files.idCardSelfieImage ? files.idCardSelfieImage.name : "Click to upload — take a photo of yourself holding your ID card"}
+                        </label>
+                        <input
+                          id="idSelfie"
+                          type="file"
+                          name="idCardSelfieImage"
+                          accept="image/*"
+                          onChange={handleFile}
+                          style={{ display: "none" }}
+                          required
+                        />
+                        <span className="field-hint">
+                          Hold your ID card next to your face and take a clear selfie — this confirms it's really you.
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </>
             )}
 
+            <ReCaptcha onChange={setRecaptchaToken} />
+
             <button className="btn btn-primary btn-block" type="submit" disabled={loading} style={{ marginTop: 10 }}>
-              {loading ? "Register ho raha hai..." : "Register Karein"}
+              {loading ? "Registering..." : "Register"}
             </button>
           </form>
 
           <div className="auth-switch">
-            Pehle se account hai? <Link to="/login">Login karein</Link>
+            Already have an account? <Link to="/login">Login</Link>
           </div>
         </div>
       </div>

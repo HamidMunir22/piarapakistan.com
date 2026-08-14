@@ -11,6 +11,9 @@ const listingSchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true, maxlength: 120 },
     description: { type: String, required: true, maxlength: 3000 },
     category: { type: String, enum: CATEGORY_IDS, required: true },
+    // Free-text custom name, required/used only when category === "other" —
+    // lets a seller list a service/product we don't have a fixed category for.
+    customCategoryName: { type: String, trim: true, maxlength: 80 },
 
     // Price in PKR. For services, priceType can be "fixed" or "hourly" or "starting_at".
     price: { type: Number, required: true, min: 0 },

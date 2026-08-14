@@ -36,7 +36,7 @@ const VerifyOtp = () => {
     setError("");
     const otp = digits.join("");
     if (otp.length !== 6) {
-      setError("6 digit ka poora code darj karein");
+      setError("Please enter the full 6-digit code");
       return;
     }
     setLoading(true);
@@ -45,7 +45,7 @@ const VerifyOtp = () => {
       login(res.data.token, res.data.user);
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "OTP verify nahi ho saka");
+      setError(err.response?.data?.message || "Could not verify OTP");
     } finally {
       setLoading(false);
     }
@@ -56,27 +56,31 @@ const VerifyOtp = () => {
     setSuccess("");
     try {
       await api.post("/auth/resend-otp", { phone });
-      setSuccess("Naya OTP bhej diya gaya hai");
+      setSuccess("A new code has been sent via SMS and email");
     } catch (err) {
-      setError("OTP dobara bhejne mein masla hua");
+      setError("Could not resend the code");
     }
   };
 
   return (
     <div className="auth-wrapper">
       <div className="auth-side">
-        <h2>Bas ek aakhri qadam</h2>
-        <p>Apna phone number verify karein taake account mehfooz rahe.</p>
+        <h2>Just one last step</h2>
+        <p>Verify your phone number to keep your account secure.</p>
       </div>
       <div className="auth-form-col">
         <div className="auth-card">
-          <h1>Phone Verify Karein</h1>
+          <h1>Verify Your Phone</h1>
           <p className="subtitle">
-            {phone ? `Code ${phone} par bheja gaya hai` : "Apna phone number check karein"}
+            {phone ? `A code was sent to ${phone} by SMS and to your email` : "Check your phone and email"}
           </p>
 
           {error && <div className="alert alert-error">{error}</div>}
           {success && <div className="alert alert-success">{success}</div>}
+
+          <div className="account-hold-notice">
+            Didn't get an SMS? We always send the same code to your email too — check your inbox (and spam folder).
+          </div>
 
           <form onSubmit={handleVerify}>
             <div className="otp-inputs">
@@ -93,12 +97,15 @@ const VerifyOtp = () => {
               ))}
             </div>
             <button className="btn btn-primary btn-block" disabled={loading}>
-              {loading ? "Verify ho raha hai..." : "Verify Karein"}
+              {loading ? "Verifying..." : "Verify"}
             </button>
           </form>
 
           <div className="auth-switch">
-            Code nahi mila? <a onClick={handleResend} style={{ cursor: "pointer", color: "var(--pp-orange-dark)", fontWeight: 700 }}>Dobara bhejein</a>
+            Didn't get the code?{" "}
+            <a onClick={handleResend} style={{ cursor: "pointer", color: "var(--pp-orange-dark)", fontWeight: 700 }}>
+              Resend
+            </a>
           </div>
         </div>
       </div>

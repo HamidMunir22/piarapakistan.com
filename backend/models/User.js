@@ -18,11 +18,17 @@ const userSchema = new mongoose.Schema(
       default: "buyer",
     },
 
-    // ---- KYC / Verification (required for seller & shop, for fraud prevention) ----
+    // ---- KYC / Verification ----
+    // Buyers: identity docs are NOT required (profilePicture optional too).
+    // Sellers/Shops: cnicNumber + ID card front/back + a selfie holding the ID
+    // card are mandatory (fraud prevention) — enforced in authController, not
+    // here, so buyers can register without touching these fields at all.
     cnicNumber: { type: String, trim: true }, // ID Card number
     idCardFrontImage: { type: String }, // file path
     idCardBackImage: { type: String }, // file path
+    idCardSelfieImage: { type: String }, // selfie of the person holding their ID card
     profilePicture: { type: String },
+    termsAcceptedAt: { type: Date }, // when the user accepted Terms & Conditions
 
     // ---- Address / Location (used for map + nearby search) ----
     address: { type: String },
@@ -36,11 +42,12 @@ const userSchema = new mongoose.Schema(
     // ---- Seller / Shop specific ----
     businessName: { type: String, trim: true }, // shop / service brand name
     category: { type: String }, // e.g. Electrician, AC Repair, Plumber, Electronics Shop
+    customCategoryName: { type: String, trim: true }, // used when category === "other"
     subCategories: [{ type: String }],
     bio: { type: String, maxlength: 1000 },
     bankAccountTitle: { type: String },
     bankAccountNumber: { type: String },
-    bankName: { type: String },
+    bankName: { type: String }, // one of utils/banks.js BANKS (incl. JazzCash/Easypaisa)
 
     // ---- Ratings ----
     ratingAverage: { type: Number, default: 0 },
@@ -57,6 +64,15 @@ const userSchema = new mongoose.Schema(
     },
     isSuspended: { type: Boolean, default: false }, // fraud / complaint action
     suspensionReason: { type: String },
+    // Seller/shop accounts are held (kycStatus "pending") for up to 24 hours
+    // while an admin manually reviews their ID documents. This is when the
+    // hold started, purely for display ("usually verified within 24 hours").
+    verificationRequestedAt: { type: Date },
+    kycDecisionAt: { type: Date }, // when admin approved/rejected — used to fire the instant notification
+
+    // ---- Login security: brute-force lockout ----
+    loginAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Date, default: null },
 
     // ---- Commission (admin-controlled, can override the platform default per seller) ----
     commissionType: { type: String, enum: ["percent", "fixed", null], default: null }, // null = use global default
@@ -81,6 +97,10 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
+};
+
+userSchema.methods.isLocked = function () {
+  return !!(this.lockUntil && this.lockUntil > new Date());
 };
 
 // Never send password / sensitive fields back to client

@@ -14,16 +14,23 @@ const getCategories = async (req, res) => {
 // ---------------------------------------------------------------------------
 const createListing = async (req, res) => {
   try {
-    const { title, description, category, price, priceType, stock } = req.body;
+    const { title, description, category, customCategoryName, price, priceType, stock } = req.body;
 
     if (!title || !description || !category || price === undefined) {
       return res.status(400).json({ success: false, message: "Title, description, category and price are required" });
     }
 
+    if (category === "other" && !customCategoryName?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Please type your service/product name for the 'Other' category",
+      });
+    }
+
     if (req.user.kycStatus !== "approved") {
       return res.status(403).json({
         success: false,
-        message: "Aapka KYC abhi approved nahi hua. Listing add karne se pehle admin approval ka intezar karein.",
+        message: "Your account is still pending verification. Please wait for admin approval before adding listings.",
       });
     }
 
@@ -35,6 +42,7 @@ const createListing = async (req, res) => {
       title,
       description,
       category,
+      customCategoryName: category === "other" ? customCategoryName?.trim() : undefined,
       price,
       priceType: priceType || "fixed",
       stock: req.user.role === "shop" ? stock ?? 0 : null,
@@ -161,7 +169,7 @@ const updateListing = async (req, res) => {
     return res.status(403).json({ success: false, message: "You can only edit your own listings" });
   }
 
-  const editable = ["title", "description", "category", "price", "priceType", "stock", "isActive"];
+  const editable = ["title", "description", "category", "customCategoryName", "price", "priceType", "stock", "isActive"];
   editable.forEach((field) => {
     if (req.body[field] !== undefined) listing[field] = req.body[field];
   });

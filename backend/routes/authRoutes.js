@@ -14,6 +14,7 @@ const {
 const registerUpload = upload.fields([
   { name: "idCardFrontImage", maxCount: 1 },
   { name: "idCardBackImage", maxCount: 1 },
+  { name: "idCardSelfieImage", maxCount: 1 },
   { name: "profilePicture", maxCount: 1 },
 ]);
 

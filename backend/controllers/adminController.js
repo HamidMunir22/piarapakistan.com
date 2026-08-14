@@ -3,6 +3,9 @@ const Listing = require("../models/Listing");
 const Order = require("../models/Order");
 const Complaint = require("../models/Complaint");
 const PlatformSettings = require("../models/PlatformSettings");
+const sendEmail = require("../utils/sendEmail");
+const sendSMS = require("../utils/sendSMS");
+const { BANKS } = require("../utils/banks");
 
 // GET /api/admin/pending-kyc - sellers/shops waiting for approval
 const getPendingKyc = async (req, res) => {
@@ -13,21 +16,54 @@ const getPendingKyc = async (req, res) => {
 };
 
 // PUT /api/admin/kyc/:userId/approve
+// Fires an instant email + SMS notification the moment admin approves —
+// even if that happens 5 minutes after signup, not after the full 24 hours.
 const approveKyc = async (req, res) => {
   const user = await User.findById(req.params.userId);
   if (!user) return res.status(404).json({ success: false, message: "User not found" });
   user.kycStatus = "approved";
+  user.kycDecisionAt = new Date();
   await user.save();
+
+  sendEmail(
+    user.email,
+    "Your PiaraPakistan account is verified!",
+    `<h2>Congratulations, ${user.firstName}!</h2>
+     <p>Your account has been verified by our team. You can now start listing your ${
+       user.role === "shop" ? "products" : "services"
+     } on PiaraPakistan.</p>
+     <p>— Team PiaraPakistan</p>`
+  );
+  sendSMS(user.phone, `PiaraPakistan: Your account has been verified! You can now start listing on the platform.`);
+
   return res.json({ success: true, message: `${user.firstName}'s KYC approved`, user: user.toSafeObject() });
 };
 
 // PUT /api/admin/kyc/:userId/reject
 const rejectKyc = async (req, res) => {
+  const { reason } = req.body;
   const user = await User.findById(req.params.userId);
   if (!user) return res.status(404).json({ success: false, message: "User not found" });
   user.kycStatus = "rejected";
+  user.kycDecisionAt = new Date();
   await user.save();
+
+  sendEmail(
+    user.email,
+    "Your PiaraPakistan verification was not approved",
+    `<h2>Hi ${user.firstName},</h2>
+     <p>Unfortunately we couldn't verify your account documents.${reason ? ` Reason: ${reason}` : ""}</p>
+     <p>Please contact support or re-submit correct documents.</p>
+     <p>— Team PiaraPakistan</p>`
+  );
+  sendSMS(user.phone, `PiaraPakistan: Your account verification was not approved. Please contact support.`);
+
   return res.json({ success: true, message: `${user.firstName}'s KYC rejected`, user: user.toSafeObject() });
+};
+
+// GET /api/admin/banks - list of supported payout banks/wallets (for reference/admin UI)
+const getBanks = async (req, res) => {
+  return res.json({ success: true, banks: BANKS });
 };
 
 // GET /api/admin/commission - global default commission %
@@ -289,6 +325,7 @@ module.exports = {
   getPendingKyc,
   approveKyc,
   rejectKyc,
+  getBanks,
   getCommission,
   updateCommission,
   updateUserCommission,

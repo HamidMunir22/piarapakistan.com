@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Trash2, Minus, Plus } from "lucide-react";
 import { useCart } from "../context/CartContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-import { formatPKR } from "../utils/format.js";
+import { formatPKR, resolveImageUrl } from "../utils/format.js";
 
 const Cart = () => {
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
@@ -21,16 +21,16 @@ const Cart = () => {
   if (items.length === 0) {
     return (
       <div className="container" style={{ padding: "60px 20px", textAlign: "center" }}>
-        <h2>Cart khali hai</h2>
-        <p style={{ color: "var(--pp-muted)", marginBottom: 20 }}>Kuch services ya products browse kar ke add karein.</p>
-        <Link to="/search" className="btn btn-primary">Search Karein</Link>
+        <h2>Your cart is empty</h2>
+        <p style={{ color: "var(--pp-muted)", marginBottom: 20 }}>Browse some services or products and add them here.</p>
+        <Link to="/search" className="btn btn-primary">Search</Link>
       </div>
     );
   }
 
   return (
     <div className="container" style={{ padding: "36px 20px 60px", maxWidth: 760 }}>
-      <h1 style={{ fontSize: 26, marginBottom: 24 }}>Aapka Cart</h1>
+      <h1 style={{ fontSize: 26, marginBottom: 24 }}>Your Cart</h1>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {items.map((item) => (
@@ -41,7 +41,7 @@ const Cart = () => {
           >
             <div style={{ width: 64, height: 64, borderRadius: 10, overflow: "hidden", background: "var(--pp-cream)", flexShrink: 0 }}>
               {item.image ? (
-                <img src={item.image} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img src={resolveImageUrl(item.image)} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
                 <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>📷</div>
               )}

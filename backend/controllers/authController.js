@@ -4,7 +4,37 @@ const generateToken = require("../utils/generateToken");
 const generateOtp = require("../utils/generateOtp");
 const sendEmail = require("../utils/sendEmail");
 const sendSMS = require("../utils/sendSMS");
+const verifyRecaptcha = require("../utils/verifyRecaptcha");
 const validator = require("validator");
+
+const LOCK_MINUTES = 30; // how long an account is locked after 3 failed attempts
+const MAX_LOGIN_ATTEMPTS = 3;
+
+// ---------------------------------------------------------------------------
+// Helper: send an OTP over SMS, and ALWAYS mirror it to email too.
+// Why: on Railway/Hostinger without a paid, Pakistan-capable SMS provider
+// configured, sendSMS() silently falls back to "dev mode" (just a console.log)
+// so the user never actually receives a code on their phone — this was the
+// reported "OTP code nahi aata mobile pr" bug. Mirroring every OTP to email
+// guarantees the user can always complete verification even if SMS fails or
+// isn't configured yet, without changing anything else in the flow.
+// ---------------------------------------------------------------------------
+const dispatchOtp = async (user, otpCode) => {
+  const smsOk = await sendSMS(
+    user.phone,
+    `PiaraPakistan: Your verification code is ${otpCode}. It expires in 10 minutes.`
+  );
+  if (!smsOk) {
+    console.warn(`[OTP] SMS delivery failed/unconfigured for ${user.phone} — falling back to email only.`);
+  }
+  await sendEmail(
+    user.email,
+    "Your PiaraPakistan verification code",
+    `<h2>Your verification code</h2>
+     <p style="font-size:28px;font-weight:bold;letter-spacing:4px;">${otpCode}</p>
+     <p>This code expires in 10 minutes. If the SMS to your phone hasn't arrived yet, you can use this email code instead.</p>`
+  );
+};
 
 // ---------------------------------------------------------------------------
 // STEP 1: Register - creates an "unverified" account and sends OTP to phone
@@ -26,12 +56,21 @@ const registerUser = async (req, res) => {
       longitude,
       businessName,
       category,
+      customCategoryName,
       bankAccountTitle,
       bankAccountNumber,
       bankName,
+      termsAccepted,
+      recaptchaToken,
     } = req.body;
 
-    // ---- Basic validation ----
+    // ---- reCAPTCHA (bot protection) ----
+    const captcha = await verifyRecaptcha(recaptchaToken);
+    if (!captcha.success) {
+      return res.status(400).json({ success: false, message: captcha.message || "reCAPTCHA verification failed" });
+    }
+
+    // ---- Basic validation (applies to everyone) ----
     if (!firstName || !lastName || !email || !phone || !password || !role) {
       return res.status(400).json({ success: false, message: "Please fill all required fields" });
     }
@@ -44,14 +83,31 @@ const registerUser = async (req, res) => {
     if (!["buyer", "seller", "shop"].includes(role)) {
       return res.status(400).json({ success: false, message: "Invalid role" });
     }
-    // CNIC + ID card images + address required for EVERYONE (fraud prevention)
-    if (!cnicNumber || !address || !city) {
-      return res
-        .status(400)
-        .json({ success: false, message: "CNIC number, address and city are required for verification" });
+    if (!address || !city) {
+      return res.status(400).json({ success: false, message: "Address and city are required" });
     }
-    if (["seller", "shop"].includes(role) && !category) {
-      return res.status(400).json({ success: false, message: "Category is required for sellers and shops" });
+
+    const isSellerOrShop = ["seller", "shop"].includes(role);
+
+    // ---- Role-based requirements ----
+    // Buyers: no CNIC/ID card required, profile picture is optional.
+    // Sellers/Shops: CNIC + ID card front/back + a selfie holding the ID card
+    // are mandatory, and they must have accepted Terms & Conditions (the
+    // "hold the ID in your hand" selfie step is only ever shown to them on
+    // the frontend, and only after they tick Terms & Conditions).
+    if (isSellerOrShop) {
+      if (!category) {
+        return res.status(400).json({ success: false, message: "Category is required for sellers and shops" });
+      }
+      if (category === "other" && !customCategoryName?.trim()) {
+        return res.status(400).json({ success: false, message: "Please type your service/product category" });
+      }
+      if (!cnicNumber) {
+        return res.status(400).json({ success: false, message: "CNIC number is required for sellers and shops" });
+      }
+      if (termsAccepted !== "true" && termsAccepted !== true) {
+        return res.status(400).json({ success: false, message: "You must accept the Terms & Conditions" });
+      }
     }
 
     const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
@@ -66,15 +122,21 @@ const registerUser = async (req, res) => {
     const idCardBackImage = req.files?.idCardBackImage?.[0]
       ? `/uploads/idcards/${req.files.idCardBackImage[0].filename}`
       : null;
+    const idCardSelfieImage = req.files?.idCardSelfieImage?.[0]
+      ? `/uploads/idcards/${req.files.idCardSelfieImage[0].filename}`
+      : null;
     const profilePicture = req.files?.profilePicture?.[0]
       ? `/uploads/profiles/${req.files.profilePicture[0].filename}`
       : null;
 
-    if (!idCardFrontImage || !idCardBackImage) {
-      return res
-        .status(400)
-        .json({ success: false, message: "ID Card front and back images are required" });
+    if (isSellerOrShop && (!idCardFrontImage || !idCardBackImage || !idCardSelfieImage)) {
+      return res.status(400).json({
+        success: false,
+        message: "ID card (front + back) and a selfie holding your ID card are required for sellers/shops",
+      });
     }
+
+    const now = new Date();
 
     const user = await User.create({
       firstName,
@@ -83,7 +145,7 @@ const registerUser = async (req, res) => {
       phone,
       password,
       role,
-      cnicNumber,
+      cnicNumber: isSellerOrShop ? cnicNumber : undefined,
       address,
       city,
       area,
@@ -91,18 +153,26 @@ const registerUser = async (req, res) => {
         latitude && longitude
           ? { type: "Point", coordinates: [parseFloat(longitude), parseFloat(latitude)] }
           : undefined,
-      idCardFrontImage,
-      idCardBackImage,
-      profilePicture,
+      idCardFrontImage: isSellerOrShop ? idCardFrontImage : undefined,
+      idCardBackImage: isSellerOrShop ? idCardBackImage : undefined,
+      idCardSelfieImage: isSellerOrShop ? idCardSelfieImage : undefined,
+      profilePicture, // optional for everyone, including buyers
       businessName,
-      category,
-      bankAccountTitle,
-      bankAccountNumber,
-      bankName,
-      kycStatus: role === "buyer" ? "not_submitted" : "pending", // seller/shop KYC needs admin approval
+      category: isSellerOrShop ? category : undefined,
+      customCategoryName: isSellerOrShop && category === "other" ? customCategoryName?.trim() : undefined,
+      bankAccountTitle: isSellerOrShop ? bankAccountTitle : undefined,
+      bankAccountNumber: isSellerOrShop ? bankAccountNumber : undefined,
+      bankName: isSellerOrShop ? bankName : undefined,
+      termsAcceptedAt: isSellerOrShop ? now : undefined,
+      // Buyers never need KYC. Sellers/shops go into "pending" and their
+      // account is held while an admin reviews their documents — usually
+      // resolved well within 24 hours, and the moment an admin decides
+      // (approve/reject) they get notified instantly by email + SMS.
+      kycStatus: isSellerOrShop ? "pending" : "not_submitted",
+      verificationRequestedAt: isSellerOrShop ? now : undefined,
     });
 
-    // ---- Send OTP to phone for verification ----
+    // ---- Send OTP to phone (mirrored to email as a reliable fallback) ----
     const otpCode = generateOtp(6);
     await Otp.create({
       identifier: user.phone,
@@ -110,21 +180,25 @@ const registerUser = async (req, res) => {
       purpose: "register",
       expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
     });
-    await sendSMS(user.phone, `PiaraPakistan: Your verification code is ${otpCode}. It expires in 10 minutes.`);
+    await dispatchOtp(user, otpCode);
 
-    // Also send a welcome email (non-blocking)
+    // ---- Welcome email (always in English, non-blocking) ----
     sendEmail(
       user.email,
-      "Welcome to PiaraPakistan",
-      `<h2>Assalam-o-Alaikum ${user.firstName},</h2>
-       <p>Your account has been created. Please verify your phone number using the code sent via SMS.</p>
-       ${role !== "buyer" ? "<p>Your seller/shop documents are under review by our team. You will be notified once approved.</p>" : ""}
-       <p>— Team PiaraPakistan</p>`
+      "Welcome to PiaraPakistan!",
+      `<h2>Welcome to PiaraPakistan, ${user.firstName}!</h2>
+       <p>Your account has been created successfully. Please verify your phone number using the code we just sent you (by SMS and email).</p>
+       ${
+         isSellerOrShop
+           ? `<p>Your seller/shop documents are now under review by our team. This is usually completed within 24 hours — you'll get an email and SMS the moment your account is verified, even if it happens sooner.</p>`
+           : ""
+       }
+       <p>Thanks for joining Pakistan's trusted marketplace.<br/>— Team PiaraPakistan</p>`
     );
 
     return res.status(201).json({
       success: true,
-      message: "Registration successful. Please verify your phone number with the OTP sent via SMS.",
+      message: "Registration successful. Please verify your phone number with the OTP sent via SMS and email.",
       userId: user._id,
       phone: user.phone,
     });
@@ -194,37 +268,78 @@ const resendOtp = async (req, res) => {
       purpose: "register",
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
     });
-    await sendSMS(phone, `PiaraPakistan: Your verification code is ${otpCode}. It expires in 10 minutes.`);
+    await dispatchOtp(user, otpCode);
 
-    return res.status(200).json({ success: true, message: "OTP resent successfully" });
+    return res.status(200).json({ success: true, message: "OTP resent via SMS and email" });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Server error resending OTP" });
   }
 };
 
 // ---------------------------------------------------------------------------
-// Login
+// Login (with reCAPTCHA + 3-attempt lockout)
 // ---------------------------------------------------------------------------
 const loginUser = async (req, res) => {
   try {
-    const { emailOrPhone, password } = req.body;
+    const { emailOrPhone, password, recaptchaToken } = req.body;
     if (!emailOrPhone || !password) {
       return res.status(400).json({ success: false, message: "Email/phone and password are required" });
+    }
+
+    const captcha = await verifyRecaptcha(recaptchaToken);
+    if (!captcha.success) {
+      return res.status(400).json({ success: false, message: captcha.message || "reCAPTCHA verification failed" });
     }
 
     const user = await User.findOne({
       $or: [{ email: emailOrPhone.toLowerCase() }, { phone: emailOrPhone }],
     });
 
-    if (!user || !(await user.comparePassword(password))) {
+    // Generic message for unknown accounts to avoid leaking which one is wrong
+    if (!user) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
+    if (user.isLocked()) {
+      const minutesLeft = Math.ceil((user.lockUntil.getTime() - Date.now()) / 60000);
+      return res.status(423).json({
+        success: false,
+        message: `Too many failed attempts. Your account is temporarily locked. Try again in ${minutesLeft} minute(s).`,
+      });
+    }
+
+    const passwordMatches = await user.comparePassword(password);
+    if (!passwordMatches) {
+      user.loginAttempts = (user.loginAttempts || 0) + 1;
+      if (user.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        user.lockUntil = new Date(Date.now() + LOCK_MINUTES * 60 * 1000);
+        user.loginAttempts = 0;
+        await user.save();
+        return res.status(423).json({
+          success: false,
+          message: `Too many failed attempts. Your account is locked for ${LOCK_MINUTES} minutes for security.`,
+        });
+      }
+      await user.save();
+      return res.status(401).json({
+        success: false,
+        message: `Invalid credentials. ${MAX_LOGIN_ATTEMPTS - user.loginAttempts} attempt(s) remaining before your account is temporarily locked.`,
+      });
+    }
+
+    // Successful password check — reset lockout counters
+    if (user.loginAttempts || user.lockUntil) {
+      user.loginAttempts = 0;
+      user.lockUntil = null;
+    }
+
     if (user.isSuspended) {
+      await user.save();
       return res.status(403).json({ success: false, message: "Account suspended. Contact support." });
     }
 
     if (!user.isPhoneVerified) {
+      await user.save();
       return res.status(403).json({
         success: false,
         message: "Please verify your phone number first",

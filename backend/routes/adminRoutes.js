@@ -18,6 +18,7 @@ const {
   getAllOrdersAdmin,
   getAllComplaints,
   respondToComplaint,
+  getBanks,
 } = require("../controllers/adminController");
 
 router.use(protect, authorize("admin"));
@@ -44,5 +45,7 @@ router.put("/commission", updateCommission);
 
 router.get("/complaints", getAllComplaints);
 router.put("/complaints/:id", respondToComplaint);
+
+router.get("/banks", getBanks);
 
 module.exports = router;

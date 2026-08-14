@@ -2,19 +2,19 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Star, MapPin } from "lucide-react";
 import Tilt from "./Tilt.jsx";
-import { formatPKR } from "../utils/format.js";
+import { formatPKR, resolveImageUrl } from "../utils/format.js";
 
 const priceLabel = (listing) => {
   const amount = formatPKR(listing.price);
-  if (listing.priceType === "hourly") return `${amount} / ghanta`;
-  if (listing.priceType === "starting_at") return `${amount} se shuru`;
+  if (listing.priceType === "hourly") return `${amount} / hour`;
+  if (listing.priceType === "starting_at") return `${amount} onwards`;
   return amount;
 };
 
 const ListingCard = ({ listing }) => {
   const navigate = useNavigate();
   const seller = listing.seller || {};
-  const image = listing.images?.[0];
+  const image = resolveImageUrl(listing.images?.[0]);
 
   return (
     <Tilt max={6}>
@@ -34,7 +34,7 @@ const ListingCard = ({ listing }) => {
             </span>
             <span className="listing-card-rating">
               <Star size={13} fill="var(--pp-orange)" color="var(--pp-orange)" />
-              {listing.ratingCount > 0 ? listing.ratingAverage.toFixed(1) : "Naya"}
+              {listing.ratingCount > 0 ? listing.ratingAverage.toFixed(1) : "New"}
             </span>
           </div>
           <div className="listing-card-price">{priceLabel(listing)}</div>

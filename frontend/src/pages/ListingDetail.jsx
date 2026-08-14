@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { fetchListingById } from "../api/listings";
 import { Star, MapPin, Phone, ShoppingCart, Minus, Plus, MessageCircle } from "lucide-react";
 import MapView from "../components/MapView.jsx";
-import { formatPKR } from "../utils/format.js";
+import { formatPKR, resolveImageUrl } from "../utils/format.js";
 import { useCart } from "../context/CartContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -24,8 +24,8 @@ const ListingDetail = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="container" style={{ padding: 60 }}>Load ho raha hai...</div>;
-  if (!listing) return <div className="container" style={{ padding: 60 }}>Listing nahi mili.</div>;
+  if (loading) return <div className="container" style={{ padding: 60 }}>Loading...</div>;
+  if (!listing) return <div className="container" style={{ padding: 60 }}>Listing not found.</div>;
 
   const seller = listing.seller || {};
   const isProduct = listing.listingType === "product";
@@ -50,7 +50,7 @@ const ListingDetail = () => {
           <div style={{ height: 340, borderRadius: 14, overflow: "hidden", background: "var(--pp-cream)", border: "1px solid var(--pp-border)" }}>
             {listing.images?.length > 0 ? (
               <img
-                src={listing.images[activeImg]}
+                src={resolveImageUrl(listing.images[activeImg])}
                 alt={listing.title}
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
@@ -65,7 +65,7 @@ const ListingDetail = () => {
               {listing.images.map((img, i) => (
                 <img
                   key={i}
-                  src={img}
+                  src={resolveImageUrl(img)}
                   onClick={() => setActiveImg(i)}
                   style={{
                     width: 60,

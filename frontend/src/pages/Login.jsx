@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext.jsx";
+import ReCaptcha from "../components/ReCaptcha.jsx";
 
 const Login = () => {
   const [form, setForm] = useState({ emailOrPhone: "", password: "" });
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -15,7 +17,7 @@ const Login = () => {
     setError("");
     setLoading(true);
     try {
-      const res = await api.post("/auth/login", form);
+      const res = await api.post("/auth/login", { ...form, recaptchaToken });
       login(res.data.token, res.data.user);
       navigate("/");
     } catch (err) {
@@ -23,7 +25,8 @@ const Login = () => {
         navigate("/verify-otp", { state: { phone: err.response.data.phone } });
         return;
       }
-      setError(err.response?.data?.message || "Login nahi ho saka");
+      // 423 = temporarily locked (brute-force protection), 401 = wrong credentials
+      setError(err.response?.data?.message || "Login failed, please try again");
     } finally {
       setLoading(false);
     }
@@ -32,19 +35,19 @@ const Login = () => {
   return (
     <div className="auth-wrapper">
       <div className="auth-side">
-        <h2>Wapas khush aamdeed</h2>
-        <p>Login karein aur apni services, orders aur dashboard dekhein.</p>
+        <h2>Welcome back</h2>
+        <p>Login to see your services, orders, and dashboard.</p>
       </div>
       <div className="auth-form-col">
         <div className="auth-card">
           <h1>Login</h1>
-          <p className="subtitle">Apna account access karein</p>
+          <p className="subtitle">Access your account</p>
 
           {error && <div className="alert alert-error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="field">
-              <label>Email ya Phone Number</label>
+              <label>Email or Phone Number</label>
               <input
                 value={form.emailOrPhone}
                 onChange={(e) => setForm({ ...form, emailOrPhone: e.target.value })}
@@ -60,13 +63,16 @@ const Login = () => {
                 required
               />
             </div>
-            <button className="btn btn-primary btn-block" disabled={loading}>
-              {loading ? "Login ho raha hai..." : "Login Karein"}
+
+            <ReCaptcha onChange={setRecaptchaToken} />
+
+            <button className="btn btn-primary btn-block" disabled={loading} style={{ marginTop: 10 }}>
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 
           <div className="auth-switch">
-            Account nahi hai? <Link to="/register">Register karein</Link>
+            Don't have an account? <Link to="/register">Register</Link>
           </div>
         </div>
       </div>

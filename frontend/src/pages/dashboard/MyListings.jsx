@@ -24,7 +24,7 @@ const MyListings = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Kya aap is listing ko delete karna chahte hain?")) return;
+    if (!window.confirm("Are you sure you want to delete this listing?")) return;
     await deleteListing(id);
     load();
   };
@@ -43,28 +43,33 @@ const MyListings = () => {
       <div className="dashboard-header">
         <div>
           <h1 style={{ fontSize: 26, marginBottom: 4 }}>
-            Meri {user?.role === "shop" ? "Products" : "Services"}
+            My {user?.role === "shop" ? "Products" : "Services"}
           </h1>
           <p style={{ color: "var(--pp-muted)", fontSize: 13.5 }}>
-            {listings.length} listing(s) • Kul orders: {listings.reduce((s, l) => s + (l.orderCount || 0), 0)}
+            {listings.length} listing(s) • Total orders: {listings.reduce((s, l) => s + (l.orderCount || 0), 0)}
           </p>
         </div>
         <Link to="/dashboard/listings/new" className="btn btn-primary">
-          + Nayi Listing Add Karein
+          + Add New Listing
         </Link>
       </div>
 
-      {!kycApproved && (
+      {user?.kycStatus === "pending" && (
+        <div className="account-hold-notice">
+          Your account is under verification. This is usually completed within 24 hours — you'll get an email and
+          SMS the moment it's approved, even if that happens sooner. Listing is disabled until then.
+        </div>
+      )}
+      {user?.kycStatus === "rejected" && (
         <div className="alert alert-error">
-          Aapka KYC (ID card verification) abhi <b>{user?.kycStatus}</b> hai. Admin approval ke baad hi aap
-          listing add kar sakein ge.
+          Your account verification was not approved. Please contact support via the Help Center.
         </div>
       )}
 
       {loading ? (
-        <p>Load ho raha hai...</p>
+        <p>Loading...</p>
       ) : listings.length === 0 ? (
-        <div className="empty-state">Abhi tak koi listing add nahi ki. Upar wale button se shuru karein.</div>
+        <div className="empty-state">No listings yet. Use the button above to add your first one.</div>
       ) : (
         <table className="dashboard-table">
           <thead>

@@ -14,6 +14,7 @@ const ListingForm = () => {
     title: "",
     description: "",
     category: "",
+    customCategoryName: "",
     price: "",
     priceType: "fixed",
     stock: "",
@@ -30,6 +31,7 @@ const ListingForm = () => {
           title: listing.title,
           description: listing.description,
           category: listing.category,
+          customCategoryName: listing.customCategoryName || "",
           price: listing.price,
           priceType: listing.priceType,
           stock: listing.stock ?? "",
@@ -43,6 +45,12 @@ const ListingForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (form.category === "other" && !form.customCategoryName.trim()) {
+      setError("Please type your service/product name for the 'Other' category");
+      return;
+    }
+
     setLoading(true);
     try {
       const fd = new FormData();
@@ -56,7 +64,7 @@ const ListingForm = () => {
       }
       navigate("/dashboard/listings");
     } catch (err) {
-      setError(err.response?.data?.message || "Listing save nahi ho saki");
+      setError(err.response?.data?.message || "Could not save this listing, please try again");
     } finally {
       setLoading(false);
     }
@@ -67,14 +75,14 @@ const ListingForm = () => {
   return (
     <div className="container" style={{ padding: "36px 20px 60px", maxWidth: 640 }}>
       <h1 style={{ fontSize: 24, marginBottom: 20 }}>
-        {isEdit ? "Listing Edit Karein" : isShop ? "Nayi Product Add Karein" : "Nayi Service Add Karein"}
+        {isEdit ? "Edit Listing" : isShop ? "Add New Product" : "Add New Service"}
       </h1>
 
       {error && <div className="alert alert-error">{error}</div>}
 
       <form onSubmit={handleSubmit} className="auth-card">
         <div className="field">
-          <label>{isShop ? "Product Ka Naam" : "Service Ka Naam"}</label>
+          <label>{isShop ? "Product Name" : "Service Name"}</label>
           <input name="title" value={form.title} onChange={handleChange} required />
         </div>
         <div className="field">
@@ -85,7 +93,7 @@ const ListingForm = () => {
           <div className="field">
             <label>Category</label>
             <select name="category" value={form.category} onChange={handleChange} required>
-              <option value="">Chunein</option>
+              <option value="">Select</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.label}
@@ -97,7 +105,7 @@ const ListingForm = () => {
             <label>Price Type</label>
             <select name="priceType" value={form.priceType} onChange={handleChange}>
               <option value="fixed">Fixed</option>
-              <option value="hourly">Per Ghanta</option>
+              <option value="hourly">Per Hour</option>
               <option value="starting_at">Starting At</option>
             </select>
           </div>
@@ -112,13 +120,30 @@ const ListingForm = () => {
             </div>
           )}
         </div>
+
+        {form.category === "other" && (
+          <div className="field">
+            <label>Your Category Name</label>
+            <input
+              name="customCategoryName"
+              placeholder="e.g. Pest Control, Event Decoration..."
+              value={form.customCategoryName}
+              onChange={handleChange}
+              required
+            />
+            <span className="field-hint">
+              Don't see your service/product in the list? Pick "Other" above and type it here.
+            </span>
+          </div>
+        )}
+
         <div className="field">
-          <label>Tasveerein (max 5)</label>
+          <label>Photos (max 5)</label>
           <input type="file" accept="image/*" multiple onChange={(e) => setImages(Array.from(e.target.files))} />
         </div>
 
         <button className="btn btn-primary btn-block" disabled={loading} style={{ marginTop: 10 }}>
-          {loading ? "Save ho raha hai..." : isEdit ? "Update Karein" : "Listing Add Karein"}
+          {loading ? "Saving..." : isEdit ? "Update Listing" : "Add Listing"}
         </button>
       </form>
     </div>
