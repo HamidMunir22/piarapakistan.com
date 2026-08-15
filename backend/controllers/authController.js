@@ -112,7 +112,18 @@ const registerUser = async (req, res) => {
 
     const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
     if (existingUser) {
-      return res.status(409).json({ success: false, message: "Email or phone number already registered" });
+      if (existingUser.isPhoneVerified) {
+        // Real, completed account — genuinely already registered.
+        return res.status(409).json({ success: false, message: "Email or phone number already registered" });
+      }
+      // Stale/abandoned signup: the account was created but the OTP step was
+      // never completed (e.g. because OTP delivery wasn't working yet, or
+      // the user simply gave up). Blocking a fresh attempt forever with
+      // "already registered" — for an account that was never actually
+      // usable — is a dead end for the user. Clear it out and let them
+      // register again from scratch.
+      await Otp.deleteMany({ identifier: { $in: [existingUser.phone, existingUser.email] } });
+      await existingUser.deleteOne();
     }
 
     // ---- Handle uploaded files (multer) ----
