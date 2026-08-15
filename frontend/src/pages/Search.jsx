@@ -1,16 +1,22 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { fetchListings, fetchCategories } from "../api/listings";
 import ListingCard from "../components/ListingCard.jsx";
 import MapView from "../components/MapView.jsx";
-import { MapPin, List, Map as MapIcon } from "lucide-react";
+import { MapPin, List, Map as MapIcon, SlidersHorizontal, Loader2 } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 const Search = () => {
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [listings, setListings] = useState([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, pages: 1, sortedByDistance: false });
+  // "loading" only drives the small spinner next to the results count now —
+  // it no longer replaces that count with a "Loading..." text, which used to
+  // flash/flicker every time a filter changed (e.g. picking a category).
   const [loading, setLoading] = useState(true);
+  const [hasSearchedOnce, setHasSearchedOnce] = useState(false);
   const [coords, setCoords] = useState(null);
   const [locating, setLocating] = useState(false);
   const [view, setView] = useState("list"); // "list" | "map"
@@ -43,7 +49,10 @@ const Search = () => {
           setListings(data.listings);
           setMeta({ total: data.total, page: data.page, pages: data.pages, sortedByDistance: data.sortedByDistance });
         })
-        .finally(() => setLoading(false));
+        .finally(() => {
+          setLoading(false);
+          setHasSearchedOnce(true);
+        });
     },
     [filters, coords, view]
   );
@@ -62,7 +71,7 @@ const Search = () => {
 
   const useMyLocation = () => {
     if (!navigator.geolocation) {
-      alert("Aapka browser location share nahi kar sakta");
+      alert(t("search.locationUnsupported"));
       return;
     }
     setLocating(true);
@@ -73,7 +82,7 @@ const Search = () => {
       },
       () => {
         setLocating(false);
-        alert("Location access nahi mil saka. Browser settings check karein.");
+        alert(t("search.locationError"));
       }
     );
   };
@@ -82,20 +91,23 @@ const Search = () => {
     <div className="container">
       <div className="search-layout">
         <aside className="filters-panel">
-          <h3>Filters</h3>
+          <h3>
+            <SlidersHorizontal size={16} className="filters-panel-icon" />
+            {t("search.filtersTitle")}
+          </h3>
           <form onSubmit={handleSubmit}>
             <div className="field">
-              <label>Keyword</label>
+              <label>{t("search.keyword")}</label>
               <input
                 value={filters.q}
                 onChange={(e) => handleFilterChange("q", e.target.value)}
-                placeholder="e.g. AC repair"
+                placeholder={t("search.keywordPlaceholder")}
               />
             </div>
             <div className="field">
-              <label>Category</label>
+              <label>{t("search.category")}</label>
               <select value={filters.category} onChange={(e) => handleFilterChange("category", e.target.value)}>
-                <option value="">Sab Categories</option>
+                <option value="">{t("search.allCategories")}</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.label}
@@ -104,27 +116,27 @@ const Search = () => {
               </select>
             </div>
             <div className="field">
-              <label>City</label>
+              <label>{t("search.city")}</label>
               <input
                 value={filters.city}
                 onChange={(e) => handleFilterChange("city", e.target.value)}
-                placeholder="e.g. Rawalpindi"
+                placeholder={t("search.cityPlaceholder")}
               />
             </div>
             <div className="field">
-              <label>Type</label>
+              <label>{t("search.type")}</label>
               <select
                 value={filters.listingType}
                 onChange={(e) => handleFilterChange("listingType", e.target.value)}
               >
-                <option value="">Services + Products</option>
-                <option value="service">Services</option>
-                <option value="product">Products</option>
+                <option value="">{t("search.typeServicesProducts")}</option>
+                <option value="service">{t("search.typeServices")}</option>
+                <option value="product">{t("search.typeProducts")}</option>
               </select>
             </div>
             <div className="form-grid">
               <div className="field">
-                <label>Min Price (PKR)</label>
+                <label>{t("search.minPrice")}</label>
                 <input
                   type="number"
                   value={filters.minPrice}
@@ -132,7 +144,7 @@ const Search = () => {
                 />
               </div>
               <div className="field">
-                <label>Max Price (PKR)</label>
+                <label>{t("search.maxPrice")}</label>
                 <input
                   type="number"
                   value={filters.maxPrice}
@@ -141,7 +153,7 @@ const Search = () => {
               </div>
             </div>
             <button className="btn btn-primary btn-block" type="submit">
-              Search Karein
+              {t("search.searchButton")}
             </button>
           </form>
 
@@ -152,45 +164,33 @@ const Search = () => {
             disabled={locating}
             type="button"
           >
-            <MapPin size={15} /> {locating ? "Location le rahe hain..." : "Mere qareeb dikhayein"}
+            <MapPin size={15} /> {locating ? t("search.locating") : t("search.nearMe")}
           </button>
         </aside>
 
         <main>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <div style={{ color: "var(--pp-muted)", fontSize: 13.5 }}>
-              {loading
-                ? "Search ho raha hai..."
-                : `${meta.total} results mile ${meta.sortedByDistance ? "(aapke qareeb sorted)" : ""}`}
+            <div className="search-results-count">
+              {loading && <Loader2 size={14} className="search-loading-spinner" />}
+              <span>
+                {meta.total} {t("search.resultsCountSuffix")}
+                {meta.sortedByDistance ? ` ${t("search.sortedByDistance")}` : ""}
+              </span>
             </div>
-            <div style={{ display: "flex", gap: 6, background: "var(--pp-cream)", padding: 4, borderRadius: 999, border: "1px solid var(--pp-border)" }}>
+            <div className="view-toggle">
               <button
                 type="button"
-                className="btn"
-                style={{
-                  padding: "6px 14px",
-                  fontSize: 12.5,
-                  background: view === "list" ? "var(--pp-white)" : "transparent",
-                  boxShadow: view === "list" ? "0 2px 6px rgba(0,0,0,0.06)" : "none",
-                  color: "var(--pp-ink)",
-                }}
+                className={`view-toggle-btn ${view === "list" ? "active" : ""}`}
                 onClick={() => setView("list")}
               >
-                <List size={14} /> List
+                <List size={14} /> {t("search.list")}
               </button>
               <button
                 type="button"
-                className="btn"
-                style={{
-                  padding: "6px 14px",
-                  fontSize: 12.5,
-                  background: view === "map" ? "var(--pp-white)" : "transparent",
-                  boxShadow: view === "map" ? "0 2px 6px rgba(0,0,0,0.06)" : "none",
-                  color: "var(--pp-ink)",
-                }}
+                className={`view-toggle-btn ${view === "map" ? "active" : ""}`}
                 onClick={() => setView("map")}
               >
-                <MapIcon size={14} /> Map
+                <MapIcon size={14} /> {t("search.map")}
               </button>
             </div>
           </div>
@@ -201,12 +201,14 @@ const Search = () => {
             )
           ) : (
             <>
-              {!loading && listings.length === 0 ? (
-                <div className="empty-state">Koi listing nahi mili. Filters badal kar dobara koshish karein.</div>
+              {hasSearchedOnce && !loading && listings.length === 0 ? (
+                <div className="empty-state">{t("search.noResults")}</div>
               ) : (
                 <div className="listings-grid">
-                  {listings.map((l) => (
-                    <ListingCard key={l._id} listing={l} />
+                  {listings.map((l, i) => (
+                    <div key={l._id} className="listing-card-enter" style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
+                      <ListingCard listing={l} />
+                    </div>
                   ))}
                 </div>
               )}
