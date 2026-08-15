@@ -1071,6 +1071,12 @@ button {
     font-weight: 500;
     color: var(--pp-ink);
     flex-shrink: 0;
+    /* Guarantees breathing room after the logo regardless of how much free
+       space is left for justify-content: space-between to distribute — on
+       tighter widths that space could shrink to near zero, which is what
+       made the active "Home" link's highlighted background visually touch
+       the PiaraPakistan logo. */
+    margin-left: 28px;
   }
   .navbar-search-desktop {
     display: flex;
@@ -1155,6 +1161,14 @@ button {
   margin: 0;
 }
 
+/* The navbar-brand markup (orange "Piara" + green "Pakistan") is reused here
+   for the logo, but the footer's background is itself green — dark green
+   text on a green gradient is invisible. Force plain white here instead. */
+.footer-brand .brand-orange,
+.footer-brand .brand-green {
+  color: var(--pp-white);
+}
+
 .footer-social {
   display: flex;
   gap: 10px;
@@ -1215,20 +1229,6 @@ button {
   color: white;
   padding: 56px 20px;
   text-align: center;
-}
-
-/* Used on About — a light background instead of the green gradient, so the
-   orange "Piara" / green "Pakistan" heading text is actually readable
-   (dark green text on a dark green gradient background is invisible). */
-.page-hero-light {
-  background: linear-gradient(150deg, var(--pp-cream), var(--pp-white) 70%);
-  color: var(--pp-ink);
-  border-bottom: 1px solid var(--pp-border);
-}
-
-.page-hero-light p {
-  color: var(--pp-muted);
-  opacity: 1;
 }
 
 .page-hero h1 {

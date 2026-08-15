@@ -11,12 +11,9 @@ const WHY = [
 const About = () => {
   return (
     <div>
-      <div className="page-hero page-hero-light">
+      <div className="page-hero">
         <div className="container">
-          <h1>
-            About <span style={{ color: "#f38516" }}>Piara</span>
-            <span style={{ color: "#246b24" }}>Pakistan</span>
-          </h1>
+          <h1>About PiaraPakistan</h1>
           <p>Pakistan's growing digital marketplace — connecting verified buyers and sellers across every category, from home services to local shops.</p>
         </div>
       </div>
