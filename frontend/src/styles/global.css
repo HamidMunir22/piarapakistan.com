@@ -1,10 +1,10 @@
 :root {
-  /* ---- Brand palette (lightened, softer take on the logo colors) ---- */
-  --pp-orange: #ff9d4d;
-  --pp-orange-dark: #f0812a;
+  /* ---- Brand palette (exact logo colors, per Kane: orange #f38516 / green #246b24) ---- */
+  --pp-orange: #f38516;
+  --pp-orange-dark: #ce7113;
   --pp-orange-soft: #fff1e2;
-  --pp-green: #34a866;
-  --pp-green-dark: #1f7d4c;
+  --pp-green: #246b24;
+  --pp-green-dark: #1d561d;
   --pp-green-soft: #e8f7ee;
   --pp-cream: #fdfcfa;
   --pp-ink: #26302a;
@@ -14,8 +14,8 @@
   --pp-white: #ffffff;
 
   --pp-radius: 16px;
-  --pp-shadow: 0 10px 30px rgba(31, 125, 76, 0.08);
-  --pp-shadow-lift: 0 22px 44px rgba(31, 125, 76, 0.14), 0 6px 14px rgba(240, 129, 42, 0.08);
+  --pp-shadow: 0 10px 30px rgba(29, 86, 29, 0.08);
+  --pp-shadow-lift: 0 22px 44px rgba(29, 86, 29, 0.14), 0 6px 14px rgba(206, 113, 19, 0.08);
   --font-display: "Poppins", "Noto Nastaliq Urdu", sans-serif;
   --font-body: "Poppins", "Noto Nastaliq Urdu", sans-serif;
 }
@@ -123,11 +123,11 @@ button {
 .btn-primary {
   background: linear-gradient(135deg, var(--pp-orange), var(--pp-orange-dark));
   color: white;
-  box-shadow: 0 6px 16px rgba(245, 137, 30, 0.3);
+  box-shadow: 0 6px 16px rgba(243, 133, 22, 0.3);
 }
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(245, 137, 30, 0.4);
+  box-shadow: 0 8px 20px rgba(243, 133, 22, 0.4);
 }
 
 .btn-secondary {
@@ -136,7 +136,7 @@ button {
   border: 1.5px solid var(--pp-green);
 }
 .btn-secondary:hover {
-  background: rgba(30, 122, 52, 0.06);
+  background: rgba(29, 86, 29, 0.06);
 }
 
 .btn-block {
@@ -258,7 +258,7 @@ button {
 .role-tab.active {
   border-color: var(--pp-orange);
   color: var(--pp-orange-dark);
-  background: rgba(245, 137, 30, 0.08);
+  background: rgba(243, 133, 22, 0.08);
 }
 
 .form-grid {
@@ -322,7 +322,7 @@ button {
 .file-upload-box.has-file {
   border-color: var(--pp-green);
   color: var(--pp-green-dark);
-  background: rgba(30, 122, 52, 0.05);
+  background: rgba(29, 86, 29, 0.05);
 }
 
 .section-label {
@@ -1413,7 +1413,7 @@ button {
   background: linear-gradient(135deg, var(--pp-orange), var(--pp-orange-dark));
   color: white;
   border: none;
-  box-shadow: 0 10px 24px rgba(240, 129, 42, 0.4);
+  box-shadow: 0 10px 24px rgba(206, 113, 19, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1643,7 +1643,7 @@ button {
 
 .role-tab.active {
   transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(240, 129, 42, 0.18);
+  box-shadow: 0 6px 14px rgba(206, 113, 19, 0.18);
 }
 
 /* ==========================================================================
@@ -1788,9 +1788,9 @@ button {
 
 .otp-method-option.active {
   border-color: var(--pp-green-dark);
-  background: linear-gradient(135deg, var(--pp-green-soft), rgba(30, 122, 52, 0.16));
+  background: linear-gradient(135deg, var(--pp-green-soft), rgba(29, 86, 29, 0.16));
   color: var(--pp-green-dark);
-  box-shadow: 0 6px 16px rgba(30, 122, 52, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 6px 16px rgba(29, 86, 29, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .otp-method-option {
@@ -1880,12 +1880,12 @@ button {
 
 .pw-strength-fill-medium {
   width: 66%;
-  background: linear-gradient(90deg, #f5b942, #e09a1c);
+  background: linear-gradient(90deg, var(--pp-orange), var(--pp-orange-dark));
 }
 
 .pw-strength-fill-strong {
   width: 100%;
-  background: linear-gradient(90deg, #2fae52, #1e7a34);
+  background: linear-gradient(90deg, var(--pp-green), var(--pp-green-dark));
 }
 
 .pw-strength-row {
@@ -1907,11 +1907,11 @@ button {
 }
 
 .pw-strength-label-medium {
-  color: #e09a1c;
+  color: var(--pp-orange-dark);
 }
 
 .pw-strength-label-strong {
-  color: #1e7a34;
+  color: var(--pp-green-dark);
 }
 
 .pw-strength-rules {
@@ -1946,8 +1946,8 @@ button {
 }
 
 .role-tab.active {
-  background: linear-gradient(135deg, rgba(245, 137, 30, 0.14), rgba(245, 137, 30, 0.05));
-  box-shadow: 0 8px 18px rgba(240, 129, 42, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: linear-gradient(135deg, rgba(243, 133, 22, 0.14), rgba(243, 133, 22, 0.05));
+  box-shadow: 0 8px 18px rgba(206, 113, 19, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 /* ==========================================================================
@@ -2065,7 +2065,7 @@ button {
   justify-content: center;
   color: white;
   background: linear-gradient(135deg, var(--pp-green), var(--pp-green-dark));
-  box-shadow: 0 8px 18px rgba(30, 122, 52, 0.28);
+  box-shadow: 0 8px 18px rgba(29, 86, 29, 0.28);
   margin-bottom: 14px;
   animation: pp-badge-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
@@ -2090,7 +2090,7 @@ button {
 }
 
 .otp-inputs input:focus {
-  box-shadow: 0 0 0 3px rgba(30, 122, 52, 0.15);
+  box-shadow: 0 0 0 3px rgba(29, 86, 29, 0.15);
   transform: translateY(-2px);
 }
 
@@ -2147,7 +2147,7 @@ button {
 
 .role-choice-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 14px 26px rgba(240, 129, 42, 0.2);
+  box-shadow: 0 14px 26px rgba(206, 113, 19, 0.2);
   border-color: var(--pp-orange);
 }
 
@@ -2159,7 +2159,7 @@ button {
   align-items: center;
   justify-content: center;
   margin: 0 auto 12px;
-  background: linear-gradient(135deg, var(--pp-orange-soft), rgba(245, 137, 30, 0.18));
+  background: linear-gradient(135deg, var(--pp-orange-soft), rgba(243, 133, 22, 0.18));
   color: var(--pp-orange-dark);
   transition: transform 0.2s ease;
 }
