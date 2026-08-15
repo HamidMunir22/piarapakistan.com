@@ -56,6 +56,10 @@ const userSchema = new mongoose.Schema(
     // ---- Verification & Trust / Safety flags ----
     isEmailVerified: { type: Boolean, default: false },
     isPhoneVerified: { type: Boolean, default: false },
+    // Which channel the user chose at registration to receive their OTP —
+    // remembered so "Resend" (and any future re-send) uses the same channel
+    // without the frontend having to keep re-sending it every time.
+    preferredOtpMethod: { type: String, enum: ["email", "sms"], default: "email" },
     // Admin must approve seller/shop KYC documents before they can list services/products
     kycStatus: {
       type: String,

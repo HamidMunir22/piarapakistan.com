@@ -44,7 +44,7 @@ const Contact = () => {
             <div className="contact-info-icon"><Mail size={18} /></div>
             <div>
               <b>Email</b>
-              <div>info@piarapakistan.com</div>
+              <div>services@piarapakistan.com</div>
             </div>
           </div>
           <div className="contact-info-item">

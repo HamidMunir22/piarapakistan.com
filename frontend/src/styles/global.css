@@ -1729,3 +1729,39 @@ button {
   color: var(--pp-green-dark);
   background: var(--pp-green-soft);
 }
+
+/* ==========================================================================
+   OTP delivery method choice (Register + Verify pages) — lets the user pick
+   email or SMS instead of silently depending on whichever channel happens
+   to be configured/working on the backend at that moment.
+   ========================================================================== */
+.otp-method-choice {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.otp-method-option {
+  flex: 1;
+  min-width: 140px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--pp-border);
+  background: var(--pp-white);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--pp-ink);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.otp-method-option:hover {
+  border-color: var(--pp-green);
+  transform: translateY(-1px);
+}
+
+.otp-method-option.active {
+  border-color: var(--pp-green-dark);
+  background: var(--pp-green-soft);
+  color: var(--pp-green-dark);
+}

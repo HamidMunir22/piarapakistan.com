@@ -72,7 +72,7 @@ const Terms = () => {
       </p>
 
       <h2>10. Contact</h2>
-      <p>Questions about these Terms can be sent to info@piarapakistan.com.</p>
+      <p>Questions about these Terms can be sent to services@piarapakistan.com.</p>
     </div>
   );
 };

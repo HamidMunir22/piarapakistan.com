@@ -39,6 +39,12 @@ const Register = () => {
   const [coords, setCoords] = useState(null);
   const [locating, setLocating] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  // Which channel the verification code should be sent through. Email
+  // defaults on since SMS delivery to Pakistani numbers depends on an SMS
+  // gateway (Twilio etc.) being fully configured, which isn't always
+  // reliable — letting the user pick avoids them waiting on a channel that
+  // was never going to arrive.
+  const [otpMethod, setOtpMethod] = useState("email");
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -115,6 +121,7 @@ const Register = () => {
         if (key !== "confirmPassword") fd.append(key, value);
       });
       fd.append("termsAccepted", isSellerOrShop ? "true" : "false");
+      fd.append("otpMethod", otpMethod);
       if (recaptchaToken) fd.append("recaptchaToken", recaptchaToken);
       if (coords) {
         fd.append("latitude", coords.lat);
@@ -128,7 +135,7 @@ const Register = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      navigate("/verify-otp", { state: { phone: res.data.phone } });
+      navigate("/verify-otp", { state: { phone: res.data.phone, otpMethod } });
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed, please try again");
     } finally {
@@ -189,6 +196,25 @@ const Register = () => {
                   onChange={handleChange}
                   required
                 />
+              </div>
+              <div className="field" style={{ gridColumn: "1 / -1" }}>
+                <label>Send my verification code via</label>
+                <div className="otp-method-choice">
+                  <button
+                    type="button"
+                    className={`otp-method-option ${otpMethod === "email" ? "active" : ""}`}
+                    onClick={() => setOtpMethod("email")}
+                  >
+                    📧 Email
+                  </button>
+                  <button
+                    type="button"
+                    className={`otp-method-option ${otpMethod === "sms" ? "active" : ""}`}
+                    onClick={() => setOtpMethod("sms")}
+                  >
+                    📱 SMS (phone number)
+                  </button>
+                </div>
               </div>
               <div className="field">
                 <label>Password</label>

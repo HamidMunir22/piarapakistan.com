@@ -19,14 +19,23 @@ const MAX_LOGIN_ATTEMPTS = 3;
 // guarantees the user can always complete verification even if SMS fails or
 // isn't configured yet, without changing anything else in the flow.
 // ---------------------------------------------------------------------------
-const dispatchOtp = async (user, otpCode) => {
-  const smsOk = await sendSMS(
-    user.phone,
-    `PiaraPakistan: Your verification code is ${otpCode}. It expires in 10 minutes.`
-  );
-  if (!smsOk) {
-    console.warn(`[OTP] SMS delivery failed/unconfigured for ${user.phone} — falling back to email only.`);
+// method: "email" (default) or "sms" — which channel the user picked on the
+// register/verify screen. We only send through the chosen channel instead of
+// always blasting both, so the user isn't left staring at a channel they
+// never asked for (and that may not even be configured, e.g. SMS without a
+// working Twilio/local gateway).
+const dispatchOtp = async (user, otpCode, method = "email") => {
+  if (method === "sms") {
+    const smsOk = await sendSMS(
+      user.phone,
+      `PiaraPakistan: Your verification code is ${otpCode}. It expires in 10 minutes.`
+    );
+    if (!smsOk) {
+      console.warn(`[OTP] SMS delivery failed/unconfigured for ${user.phone}.`);
+    }
+    return;
   }
+
   // IMPORTANT: intentionally NOT awaited. If SMTP is slow/unreachable (e.g.
   // the host's network blocks outbound email), awaiting this used to freeze
   // the whole register/login/resend-OTP request for up to 2 minutes,
@@ -39,7 +48,7 @@ const dispatchOtp = async (user, otpCode) => {
     "Your PiaraPakistan verification code",
     `<h2>Your verification code</h2>
      <p style="font-size:28px;font-weight:bold;letter-spacing:4px;">${otpCode}</p>
-     <p>This code expires in 10 minutes. If the SMS to your phone hasn't arrived yet, you can use this email code instead.</p>`
+     <p>This code expires in 10 minutes.</p>`
   ).catch((err) => console.error(`[OTP] Email dispatch failed for ${user.email}:`, err.message));
 };
 
@@ -69,7 +78,12 @@ const registerUser = async (req, res) => {
       bankName,
       termsAccepted,
       recaptchaToken,
+      otpMethod,
     } = req.body;
+
+    // Default to email — it's the more reliable channel when SMS gateway
+    // credentials aren't set up yet.
+    const chosenOtpMethod = otpMethod === "sms" ? "sms" : "email";
 
     // ---- reCAPTCHA (bot protection) ----
     const captcha = await verifyRecaptcha(recaptchaToken);
@@ -188,9 +202,10 @@ const registerUser = async (req, res) => {
       // (approve/reject) they get notified instantly by email + SMS.
       kycStatus: isSellerOrShop ? "pending" : "not_submitted",
       verificationRequestedAt: isSellerOrShop ? now : undefined,
+      preferredOtpMethod: chosenOtpMethod,
     });
 
-    // ---- Send OTP to phone (mirrored to email as a reliable fallback) ----
+    // ---- Send OTP via whichever channel the user picked ----
     const otpCode = generateOtp(6);
     await Otp.create({
       identifier: user.phone,
@@ -198,14 +213,16 @@ const registerUser = async (req, res) => {
       purpose: "register",
       expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
     });
-    await dispatchOtp(user, otpCode);
+    await dispatchOtp(user, otpCode, chosenOtpMethod);
 
     // ---- Welcome email (always in English, non-blocking) ----
     sendEmail(
       user.email,
       "Welcome to PiaraPakistan!",
       `<h2>Welcome to PiaraPakistan, ${user.firstName}!</h2>
-       <p>Your account has been created successfully. Please verify your phone number using the code we just sent you (by SMS and email).</p>
+       <p>Your account has been created successfully. Please verify using the code we just sent you via ${
+         chosenOtpMethod === "sms" ? "SMS" : "email"
+       }.</p>
        ${
          isSellerOrShop
            ? `<p>Your seller/shop documents are now under review by our team. This is usually completed within 24 hours — you'll get an email and SMS the moment your account is verified, even if it happens sooner.</p>`
@@ -216,7 +233,7 @@ const registerUser = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Registration successful. Please verify your phone number with the OTP sent via SMS and email.",
+      message: `Registration successful. Please verify with the OTP sent via ${chosenOtpMethod === "sms" ? "SMS" : "email"}.`,
       userId: user._id,
       phone: user.phone,
     });
@@ -288,9 +305,13 @@ const verifyOtp = async (req, res) => {
 // ---------------------------------------------------------------------------
 const resendOtp = async (req, res) => {
   try {
-    const { phone } = req.body;
+    const { phone, otpMethod } = req.body;
     const user = await User.findOne({ phone });
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    // Use whichever method the frontend passes for this resend request; fall
+    // back to whatever the user originally chose at registration.
+    const method = otpMethod === "sms" || otpMethod === "email" ? otpMethod : user.preferredOtpMethod || "email";
 
     const otpCode = generateOtp(6);
     await Otp.create({
@@ -299,9 +320,9 @@ const resendOtp = async (req, res) => {
       purpose: "register",
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
     });
-    await dispatchOtp(user, otpCode);
+    await dispatchOtp(user, otpCode, method);
 
-    return res.status(200).json({ success: true, message: "OTP resent via SMS and email" });
+    return res.status(200).json({ success: true, message: `OTP resent via ${method === "sms" ? "SMS" : "email"}` });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Server error resending OTP" });
   }

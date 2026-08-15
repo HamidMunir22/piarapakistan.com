@@ -8,6 +8,8 @@ const VerifyOtp = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const phone = state?.phone || "";
+  const otpMethod = state?.otpMethod || "email";
+  const methodLabel = otpMethod === "sms" ? "SMS" : "email";
 
   const [digits, setDigits] = useState(new Array(6).fill(""));
   const [error, setError] = useState("");
@@ -55,8 +57,8 @@ const VerifyOtp = () => {
     setError("");
     setSuccess("");
     try {
-      await api.post("/auth/resend-otp", { phone });
-      setSuccess("A new code has been sent via SMS and email");
+      await api.post("/auth/resend-otp", { phone, otpMethod });
+      setSuccess(`A new code has been sent via ${methodLabel}`);
     } catch (err) {
       setError("Could not resend the code");
     }
@@ -72,14 +74,18 @@ const VerifyOtp = () => {
         <div className="auth-card">
           <h1>Verify Your Phone</h1>
           <p className="subtitle">
-            {phone ? `A code was sent to ${phone} by SMS and to your email` : "Check your phone and email"}
+            {phone
+              ? `A code was sent via ${methodLabel}${otpMethod === "sms" ? ` to ${phone}` : ""}`
+              : `Check your ${methodLabel}`}
           </p>
 
           {error && <div className="alert alert-error">{error}</div>}
           {success && <div className="alert alert-success">{success}</div>}
 
           <div className="account-hold-notice">
-            Didn't get an SMS? We always send the same code to your email too — check your inbox (and spam folder).
+            {otpMethod === "sms"
+              ? "Didn't get an SMS? Check your phone number is correct, or use \"Resend\" below to try again."
+              : "Check your inbox (and spam/junk folder) for the code — it can take a minute to arrive."}
           </div>
 
           <form onSubmit={handleVerify}>
