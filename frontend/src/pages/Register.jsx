@@ -7,8 +7,14 @@ import { fetchBanks } from "../api/admin.js";
 import ReCaptcha from "../components/ReCaptcha.jsx";
 import PasswordStrength, { evaluatePassword } from "../components/PasswordStrength.jsx";
 
+const ROLES = [
+  { key: "buyer", label: "Buyer", Icon: ShoppingBag, desc: "Browse & book services or shop products" },
+  { key: "seller", label: "Service Seller", Icon: Wrench, desc: "Offer your skills — plumber, electrician, tutor..." },
+  { key: "shop", label: "Shop Owner", Icon: Store, desc: "Sell products from your own shop online" },
+];
+
 const initialState = {
-  role: "buyer",
+  role: "",
   firstName: "",
   lastName: "",
   gender: "",
@@ -46,7 +52,7 @@ const Register = () => {
   // gateway (Twilio etc.) being fully configured, which isn't always
   // reliable — letting the user pick avoids them waiting on a channel that
   // was never going to arrive.
-  const [otpMethod, setOtpMethod] = useState("email");
+  const [otpMethod, setOtpMethod] = useState(null);
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -95,6 +101,16 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!form.role) {
+      setError("Please choose Buyer, Service Seller, or Shop Owner to continue");
+      return;
+    }
+
+    if (!otpMethod) {
+      setError("Please choose whether to receive your verification code via Email or Mobile Number");
+      return;
+    }
 
     if (!evaluatePassword(form.password).isStrong) {
       setError(
@@ -160,6 +176,11 @@ const Register = () => {
           Register on PiaraPakistan — buyer or seller — every account is verified so the platform stays safe for
           everyone.
         </p>
+        <ul className="auth-side-features">
+          <li>✓ Verified buyers &amp; sellers</li>
+          <li>✓ Secure JazzCash / Easypaisa / Bank payouts</li>
+          <li>✓ Nationwide — every city in Pakistan</li>
+        </ul>
       </div>
 
       <div className="auth-form-col">
@@ -167,52 +188,75 @@ const Register = () => {
           <h1>Create Account</h1>
           <p className="subtitle">Just 2 minutes — secure and simple</p>
 
-          <div className="role-tabs">
-            {[
-              { key: "buyer", label: "Buyer", Icon: ShoppingBag },
-              { key: "seller", label: "Service Seller", Icon: Wrench },
-              { key: "shop", label: "Shop Owner", Icon: Store },
-            ].map(({ key, label, Icon }) => (
-              <div
-                key={key}
-                className={`role-tab ${form.role === key ? "active" : ""}`}
-                onClick={() => handleRoleChange(key)}
-              >
-                <Icon size={20} className="role-tab-icon" />
-                <span>{label}</span>
-              </div>
-            ))}
-          </div>
-
           {error && <div className="alert alert-error">{error}</div>}
 
-          <div className="field register-via-field">
-            <label>Register with</label>
-            <div className="otp-method-choice">
-              <button
-                type="button"
-                className={`otp-method-option ${otpMethod === "email" ? "active" : ""}`}
-                onClick={() => setOtpMethod("email")}
-              >
-                <Mail size={20} />
-                Email
-                <span className="otp-method-sub">Code sent to your email</span>
-              </button>
-              <button
-                type="button"
-                className={`otp-method-option ${otpMethod === "sms" ? "active" : ""}`}
-                onClick={() => setOtpMethod("sms")}
-              >
-                <Phone size={20} />
-                Mobile Number
-                <span className="otp-method-sub">Code sent via SMS to your SIM</span>
-              </button>
+          {!form.role ? (
+            <div className="role-choice-grid">
+              {ROLES.map(({ key, label, Icon, desc }) => (
+                <div key={key} className="role-choice-card" onClick={() => handleRoleChange(key)}>
+                  <div className="role-choice-icon">
+                    <Icon size={26} />
+                  </div>
+                  <div className="role-choice-label">{label}</div>
+                  <div className="role-choice-desc">{desc}</div>
+                </div>
+              ))}
             </div>
-            <span className="field-hint">
-              Both email and phone number are required either way — this only decides where your verification code
-              is delivered.
-            </span>
-          </div>
+          ) : (
+            <>
+              <div className="chosen-pill">
+                {(() => {
+                  const r = ROLES.find((x) => x.key === form.role);
+                  const Icon = r.Icon;
+                  return (
+                    <>
+                      <Icon size={16} />
+                      <span>{r.label}</span>
+                    </>
+                  );
+                })()}
+                <button type="button" className="chosen-pill-change" onClick={() => handleRoleChange("")}>
+                  Change
+                </button>
+              </div>
+
+              {!otpMethod ? (
+                <div className="field register-via-field">
+                  <label>Register with</label>
+                  <div className="otp-method-choice">
+                    <button
+                      type="button"
+                      className="otp-method-option"
+                      onClick={() => setOtpMethod("email")}
+                    >
+                      <Mail size={20} />
+                      Email
+                      <span className="otp-method-sub">Code sent to your email</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="otp-method-option"
+                      onClick={() => setOtpMethod("sms")}
+                    >
+                      <Phone size={20} />
+                      Mobile Number
+                      <span className="otp-method-sub">Code sent via SMS to your SIM</span>
+                    </button>
+                  </div>
+                  <span className="field-hint">
+                    Both email and phone number are still needed below — this only decides where your verification
+                    code is delivered.
+                  </span>
+                </div>
+              ) : (
+                <div className="chosen-pill">
+                  {otpMethod === "email" ? <Mail size={16} /> : <Phone size={16} />}
+                  <span>Register with {otpMethod === "email" ? "Email" : "Mobile Number"}</span>
+                  <button type="button" className="chosen-pill-change" onClick={() => setOtpMethod(null)}>
+                    Change
+                  </button>
+                </div>
+              )}
 
           <form onSubmit={handleSubmit}>
             <div className="section-label">Basic Information</div>
@@ -479,6 +523,8 @@ const Register = () => {
               {loading ? "Registering..." : "Register"}
             </button>
           </form>
+            </>
+          )}
 
           <div className="auth-switch">
             Already have an account? <Link to="/login">Login</Link>
