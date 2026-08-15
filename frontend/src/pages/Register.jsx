@@ -5,11 +5,13 @@ import api from "../api/client";
 import { fetchCategories } from "../api/listings";
 import { fetchBanks } from "../api/admin.js";
 import ReCaptcha from "../components/ReCaptcha.jsx";
+import PasswordStrength, { evaluatePassword } from "../components/PasswordStrength.jsx";
 
 const initialState = {
   role: "buyer",
   firstName: "",
   lastName: "",
+  gender: "",
   email: "",
   phone: "",
   password: "",
@@ -94,6 +96,13 @@ const Register = () => {
     e.preventDefault();
     setError("");
 
+    if (!evaluatePassword(form.password).isStrong) {
+      setError(
+        "Please choose a stronger password — at least 8 characters with uppercase, lowercase, a number, and a special character (@#$%&*)."
+      );
+      return;
+    }
+
     if (form.password !== form.confirmPassword) {
       setError("Password and confirm password do not match");
       return;
@@ -172,6 +181,32 @@ const Register = () => {
 
           {error && <div className="alert alert-error">{error}</div>}
 
+          <div className="field register-via-field">
+            <label>Register with</label>
+            <div className="otp-method-choice">
+              <button
+                type="button"
+                className={`otp-method-option ${otpMethod === "email" ? "active" : ""}`}
+                onClick={() => setOtpMethod("email")}
+              >
+                📧 Email
+                <span className="otp-method-sub">Code sent to your email</span>
+              </button>
+              <button
+                type="button"
+                className={`otp-method-option ${otpMethod === "sms" ? "active" : ""}`}
+                onClick={() => setOtpMethod("sms")}
+              >
+                📱 Mobile Number
+                <span className="otp-method-sub">Code sent via SMS to your SIM</span>
+              </button>
+            </div>
+            <span className="field-hint">
+              Both email and phone number are required either way — this only decides where your verification code
+              is delivered.
+            </span>
+          </div>
+
           <form onSubmit={handleSubmit}>
             <div className="section-label">Basic Information</div>
             <div className="form-grid">
@@ -184,11 +219,22 @@ const Register = () => {
                 <input name="lastName" value={form.lastName} onChange={handleChange} required />
               </div>
               <div className="field">
-                <label>Email</label>
+                <label>Gender</label>
+                <select name="gender" value={form.gender} onChange={handleChange} required>
+                  <option value="">Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div className="field">
+                <label>Email {otpMethod === "email" && <span className="req-badge">code sent here</span>}</label>
                 <input type="email" name="email" value={form.email} onChange={handleChange} required />
               </div>
               <div className="field">
-                <label>Phone Number</label>
+                <label>
+                  Phone Number {otpMethod === "sms" && <span className="req-badge">code sent here</span>}
+                </label>
                 <input
                   name="phone"
                   placeholder="+92 3XX XXXXXXX"
@@ -197,28 +243,10 @@ const Register = () => {
                   required
                 />
               </div>
-              <div className="field" style={{ gridColumn: "1 / -1" }}>
-                <label>Send my verification code via</label>
-                <div className="otp-method-choice">
-                  <button
-                    type="button"
-                    className={`otp-method-option ${otpMethod === "email" ? "active" : ""}`}
-                    onClick={() => setOtpMethod("email")}
-                  >
-                    📧 Email
-                  </button>
-                  <button
-                    type="button"
-                    className={`otp-method-option ${otpMethod === "sms" ? "active" : ""}`}
-                    onClick={() => setOtpMethod("sms")}
-                  >
-                    📱 SMS (phone number)
-                  </button>
-                </div>
-              </div>
               <div className="field">
                 <label>Password</label>
-                <input type="password" name="password" value={form.password} onChange={handleChange} required minLength={6} />
+                <input type="password" name="password" value={form.password} onChange={handleChange} required minLength={8} />
+                <PasswordStrength password={form.password} />
               </div>
               <div className="field">
                 <label>Confirm Password</label>

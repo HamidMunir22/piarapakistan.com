@@ -9,6 +9,25 @@ const validator = require("validator");
 
 const LOCK_MINUTES = 30; // how long an account is locked after 3 failed attempts
 const MAX_LOGIN_ATTEMPTS = 3;
+const OTP_TTL_MS = 2 * 60 * 1000; // 2 minutes — short window so a leaked/guessed code can't be reused later
+
+// ---------------------------------------------------------------------------
+// Password strength: require at least 8 characters, one uppercase, one
+// lowercase, one number, and one special character. This mirrors the same
+// rule enforced on the frontend's live strength meter (red/yellow/green) so
+// a user can never bypass it by disabling JavaScript or calling the API
+// directly — the server is always the final authority on what's "strong".
+// ---------------------------------------------------------------------------
+const isStrongPassword = (password) => {
+  if (typeof password !== "string" || password.length < 8) return false;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecial = /[!@#$%^&*(),.?":{}|<>_\-+=~`[\]/\\;']/.test(password);
+  return hasUpper && hasLower && hasNumber && hasSpecial;
+};
+const PASSWORD_RULE_MESSAGE =
+  "Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character (e.g. @#$%&*).";
 
 // ---------------------------------------------------------------------------
 // Helper: send an OTP over SMS, and ALWAYS mirror it to email too.
@@ -63,6 +82,7 @@ const registerUser = async (req, res) => {
       email,
       phone,
       password,
+      gender,
       role, // buyer | seller | shop
       cnicNumber,
       address,
@@ -92,14 +112,17 @@ const registerUser = async (req, res) => {
     }
 
     // ---- Basic validation (applies to everyone) ----
-    if (!firstName || !lastName || !email || !phone || !password || !role) {
+    if (!firstName || !lastName || !email || !phone || !password || !role || !gender) {
       return res.status(400).json({ success: false, message: "Please fill all required fields" });
     }
     if (!validator.isEmail(email)) {
       return res.status(400).json({ success: false, message: "Invalid email address" });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({ success: false, message: PASSWORD_RULE_MESSAGE });
+    }
+    if (!["male", "female", "other"].includes(gender)) {
+      return res.status(400).json({ success: false, message: "Invalid gender" });
     }
     if (!["buyer", "seller", "shop"].includes(role)) {
       return res.status(400).json({ success: false, message: "Invalid role" });
@@ -176,6 +199,7 @@ const registerUser = async (req, res) => {
       email,
       phone,
       password,
+      gender,
       role,
       cnicNumber: isSellerOrShop ? cnicNumber : undefined,
       address,
@@ -211,7 +235,7 @@ const registerUser = async (req, res) => {
       identifier: user.phone,
       otp: otpCode,
       purpose: "register",
-      expiresAt: new Date(Date.now() + 2 * 60 * 1000), // 2 minutes
+      expiresAt: new Date(Date.now() + OTP_TTL_MS),
     });
     await dispatchOtp(user, otpCode, chosenOtpMethod);
 
@@ -324,13 +348,122 @@ const resendOtp = async (req, res) => {
       identifier: phone,
       otp: otpCode,
       purpose: "register",
-      expiresAt: new Date(Date.now() + 2 * 60 * 1000), // 2 minutes
+      expiresAt: new Date(Date.now() + OTP_TTL_MS),
     });
     await dispatchOtp(user, otpCode, method);
 
     return res.status(200).json({ success: true, message: `OTP resent via ${method === "sms" ? "SMS" : "email"}` });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Server error resending OTP" });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Forgot / Reset password
+// The user picks Email or Mobile Number to identify their account, we look
+// them up by whichever they typed, and send a reset code through THAT SAME
+// channel (email chosen -> code emailed; phone chosen -> code texted). This
+// mirrors the register/verify flow so it feels consistent across the app.
+// ---------------------------------------------------------------------------
+const sendResetCode = async (user, otpCode, method) => {
+  if (method === "sms") {
+    const smsOk = await sendSMS(
+      user.phone,
+      `PiaraPakistan: Your password reset code is ${otpCode}. It expires in 2 minutes. If you didn't request this, ignore this message.`
+    );
+    if (!smsOk) console.warn(`[Reset] SMS delivery failed/unconfigured for ${user.phone}.`);
+    return;
+  }
+  sendEmail(
+    user.email,
+    "Reset your PiaraPakistan password",
+    `<h2>Password reset code</h2>
+     <p style="font-size:28px;font-weight:bold;letter-spacing:4px;">${otpCode}</p>
+     <p>This code expires in 2 minutes. If you didn't request a password reset, you can safely ignore this email.</p>`
+  ).catch((err) => console.error(`[Reset] Email dispatch failed for ${user.email}:`, err.message));
+};
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { emailOrPhone, method } = req.body;
+    if (!emailOrPhone || !method || !["email", "sms"].includes(method)) {
+      return res.status(400).json({ success: false, message: "Please provide your email/phone and choose a method" });
+    }
+
+    const user = await User.findOne({
+      $or: [{ email: emailOrPhone.toLowerCase() }, { phone: emailOrPhone }],
+    });
+
+    // Don't reveal whether the account exists — always respond the same way,
+    // but only actually send a code (and only create the OTP record) if a
+    // matching account was found.
+    if (user) {
+      const identifier = method === "sms" ? user.phone : user.email;
+      const otpCode = generateOtp(6);
+      await Otp.create({
+        identifier,
+        otp: otpCode,
+        purpose: "reset_password",
+        expiresAt: new Date(Date.now() + OTP_TTL_MS),
+      });
+      await sendResetCode(user, otpCode, method);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `If an account matches, a reset code has been sent via ${method === "sms" ? "SMS" : "email"}.`,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Server error requesting password reset" });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { emailOrPhone, method, otp, newPassword } = req.body;
+    if (!emailOrPhone || !method || !otp || !newPassword) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+    if (!isStrongPassword(newPassword)) {
+      return res.status(400).json({ success: false, message: PASSWORD_RULE_MESSAGE });
+    }
+
+    const user = await User.findOne({
+      $or: [{ email: emailOrPhone.toLowerCase() }, { phone: emailOrPhone }],
+    });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "No account found" });
+    }
+
+    const identifier = method === "sms" ? user.phone : user.email;
+    const record = await Otp.findOne({
+      identifier,
+      otp,
+      purpose: "reset_password",
+      verified: false,
+    }).sort({ createdAt: -1 });
+
+    if (!record) {
+      return res.status(400).json({ success: false, message: "Invalid or expired code" });
+    }
+    if (record.expiresAt < new Date()) {
+      return res.status(400).json({ success: false, message: "Code has expired. Please request a new one." });
+    }
+
+    record.verified = true;
+    await record.save();
+
+    user.password = newPassword; // pre("save") hook re-hashes it
+    // A password reset is also a good moment to clear any brute-force lockout.
+    user.loginAttempts = 0;
+    user.lockUntil = null;
+    await user.save();
+
+    return res.status(200).json({ success: true, message: "Password has been reset. You can now log in." });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Server error resetting password" });
   }
 };
 
@@ -439,4 +572,12 @@ const getMe = async (req, res) => {
   return res.status(200).json({ success: true, user: req.user.toSafeObject ? req.user.toSafeObject() : req.user });
 };
 
-module.exports = { registerUser, verifyOtp, resendOtp, loginUser, getMe };
+module.exports = {
+  registerUser,
+  verifyOtp,
+  resendOtp,
+  loginUser,
+  getMe,
+  forgotPassword,
+  resetPassword,
+};

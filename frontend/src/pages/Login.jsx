@@ -62,6 +62,9 @@ const Login = () => {
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 required
               />
+              <div className="forgot-password-link">
+                <Link to="/forgot-password">Forgot password?</Link>
+              </div>
             </div>
 
             <ReCaptcha onChange={setRecaptchaToken} />

@@ -12,6 +12,7 @@ import Privacy from "./pages/Privacy.jsx";
 import Register from "./pages/Register.jsx";
 import VerifyOtp from "./pages/VerifyOtp.jsx";
 import Login from "./pages/Login.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Categories from "./pages/Categories.jsx";
 import Search from "./pages/Search.jsx";
 import ListingDetail from "./pages/ListingDetail.jsx";
@@ -43,6 +44,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/search" element={<Search />} />
         <Route path="/listing/:id" element={<ListingDetail />} />

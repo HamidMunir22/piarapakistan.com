@@ -8,6 +8,8 @@ const {
   resendOtp,
   loginUser,
   getMe,
+  forgotPassword,
+  resetPassword,
 } = require("../controllers/authController");
 
 // Accept 3 possible image fields during registration
@@ -22,6 +24,8 @@ router.post("/register", registerUpload, registerUser);
 router.post("/verify-otp", verifyOtp);
 router.post("/resend-otp", resendOtp);
 router.post("/login", loginUser);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 router.get("/me", protect, getMe);
 
 module.exports = router;
