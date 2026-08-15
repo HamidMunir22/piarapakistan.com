@@ -5,16 +5,16 @@
   --pp-orange-soft: #fff1e2;
   --pp-green: #246b24;
   --pp-green-dark: #1f7d4c;
-  --pp-green-soft: #e8f7ee;
+  --pp-green-soft: #246b24;
   --pp-cream: #fdfcfa;
-  --pp-ink: #26302a;
+  --pp-ink: #6f7b74;
   --pp-muted: #83897f;
   --pp-border: #edeae2;
-  --pp-danger: #e05a4a;
+  --pp-danger: #eb2222;
   --pp-white: #ffffff;
 
   --pp-radius: 16px;
-  --pp-shadow: 0 10px 30px rgba(31, 125, 76, 0.08);
+  --pp-shadow: 0 10px 30px hwb(127 11% 49%);
   --pp-shadow-lift: 0 22px 44px rgba(31, 125, 76, 0.14), 0 6px 14px rgba(240, 129, 42, 0.08);
   --font-display: "Poppins", "Noto Nastaliq Urdu", sans-serif;
   --font-body: "Poppins", "Noto Nastaliq Urdu", sans-serif;
@@ -63,7 +63,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 24px;
+  padding: 12px 22px;
   background: var(--pp-white);
   border-bottom: 1px solid var(--pp-border);
   position: sticky;
@@ -75,7 +75,7 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 20px;
 }
 
@@ -94,7 +94,7 @@ button {
 
 .navbar-links {
   display: flex;
-  gap: 24px;
+  gap: 22px;
   align-items: center;
   font-weight: 500;
   color: var(--pp-ink);
@@ -102,7 +102,7 @@ button {
 
 .navbar-actions {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: center;
 }
 
@@ -111,7 +111,7 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 9px;
   padding: 11px 22px;
   border-radius: 999px;
   border: none;
@@ -201,7 +201,7 @@ button {
   align-items: center;
   justify-content: center;
   padding: 30px 20px;
-}
+} 
 
 .auth-card {
   width: 100%;
