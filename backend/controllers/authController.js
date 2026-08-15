@@ -27,13 +27,20 @@ const dispatchOtp = async (user, otpCode) => {
   if (!smsOk) {
     console.warn(`[OTP] SMS delivery failed/unconfigured for ${user.phone} — falling back to email only.`);
   }
-  await sendEmail(
+  // IMPORTANT: intentionally NOT awaited. If SMTP is slow/unreachable (e.g.
+  // the host's network blocks outbound email), awaiting this used to freeze
+  // the whole register/login/resend-OTP request for up to 2 minutes,
+  // causing the browser to show "Server error" and tempting the user to
+  // resubmit — which then raced with the still-pending first request and
+  // crashed with a duplicate-key error. Firing it without awaiting means the
+  // API always responds immediately regardless of email deliverability.
+  sendEmail(
     user.email,
     "Your PiaraPakistan verification code",
     `<h2>Your verification code</h2>
      <p style="font-size:28px;font-weight:bold;letter-spacing:4px;">${otpCode}</p>
      <p>This code expires in 10 minutes. If the SMS to your phone hasn't arrived yet, you can use this email code instead.</p>`
-  );
+  ).catch((err) => console.error(`[OTP] Email dispatch failed for ${user.email}:`, err.message));
 };
 
 // ---------------------------------------------------------------------------
@@ -215,6 +222,19 @@ const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    // A duplicate-key error here means two registration attempts for the
+    // same email/phone landed at almost the same moment (e.g. the user
+    // double-clicked "Register", or resubmitted while an earlier attempt was
+    // still processing) and both passed the "does this exist yet?" check
+    // before either finished writing to the database. This is a normal race
+    // condition, not a real server fault — tell the user to simply retry
+    // instead of showing a scary generic error.
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "That email or phone number is already being registered — please wait a few seconds and try again.",
+      });
+    }
     return res.status(500).json({ success: false, message: "Server error during registration", error: error.message });
   }
 };

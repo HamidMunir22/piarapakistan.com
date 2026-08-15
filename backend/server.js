@@ -21,6 +21,13 @@ const { BANKS } = require("./utils/banks");
 const app = express();
 const server = http.createServer(app);
 
+// Railway (and most PaaS hosts) put the app behind a reverse proxy, so
+// Express sees an internal proxy IP instead of the visitor's real IP unless
+// told to trust the proxy's X-Forwarded-For header. Without this, the
+// express-rate-limit / login-lockout logic can't reliably tell users apart
+// by IP (and logs a "trust proxy" warning on every request).
+app.set("trust proxy", 1);
+
 // ---- Database ----
 connectDB();
 
