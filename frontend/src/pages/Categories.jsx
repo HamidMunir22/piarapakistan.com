@@ -15,9 +15,9 @@ const Categories = () => {
   return (
     <div className="container" style={{ padding: "40px 20px 60px" }}>
       <h1 style={{ fontSize: 28 }}>Categories</h1>
-      <p style={{ color: "var(--pp-muted)" }}>Choose the category according to your need</p>
+      <p style={{ color: "var(--pp-muted)" }}>Apni zaroorat ke mutabiq category chunein</p>
 
-      {/*{loading ? (
+      {loading ? (
         <p style={{ marginTop: 30 }}>Load ho raha hai...</p>
       ) : (
         <div className="categories-grid">
@@ -25,7 +25,7 @@ const Categories = () => {
             <CategoryCard key={c.id} category={c} />
           ))}
         </div>
-      )}*/}
+      )}
     </div>
   );
 };
