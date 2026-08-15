@@ -1,0 +1,23 @@
+# PiaraPakistan — SPA routing fix for Hostinger (Apache)
+#
+# Why this file exists: React Router handles pages like /about, /contact,
+# /categories etc. entirely in the browser (client-side). There are no real
+# folders/files at those paths on the server. Without this rule, refreshing
+# or directly opening a URL like piarapakistan.com/about makes Apache look
+# for a physical "about" file, find nothing, and show the generic Hostinger
+# 404 page. This rule tells Apache: if the requested file/folder doesn't
+# actually exist, serve index.html instead — React Router then reads the
+# URL and renders the correct page.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # If the request is for a real file or folder (JS, CSS, images, etc.), serve it directly.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Otherwise, hand everything to index.html so React Router can take over.
+  RewriteRule ^ index.html [L]
+</IfModule>
