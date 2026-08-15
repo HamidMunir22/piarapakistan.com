@@ -215,21 +215,12 @@ const registerUser = async (req, res) => {
     });
     await dispatchOtp(user, otpCode, chosenOtpMethod);
 
-    // ---- Welcome email (always in English, non-blocking) ----
-    sendEmail(
-      user.email,
-      "Welcome to PiaraPakistan!",
-      `<h2>Welcome to PiaraPakistan, ${user.firstName}!</h2>
-       <p>Your account has been created successfully. Please verify using the code we just sent you via ${
-         chosenOtpMethod === "sms" ? "SMS" : "email"
-       }.</p>
-       ${
-         isSellerOrShop
-           ? `<p>Your seller/shop documents are now under review by our team. This is usually completed within 24 hours — you'll get an email and SMS the moment your account is verified, even if it happens sooner.</p>`
-           : ""
-       }
-       <p>Thanks for joining Pakistan's trusted marketplace.<br/>— Team PiaraPakistan</p>`
-    );
+    // NOTE: We used to also send a "Welcome to PiaraPakistan!" email right
+    // here, at the same moment as the OTP. That meant every new user got two
+    // emails at once and had to figure out which one had the actual code —
+    // confusing, and not how normal sites behave. The welcome email is now
+    // sent from verifyOtp() instead, only after the account is actually
+    // verified, so registration only ever sends the ONE email with the code.
 
     return res.status(201).json({
       success: true,
@@ -286,6 +277,21 @@ const verifyOtp = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
+
+    // ---- Welcome email — only sent now, once the account is ACTUALLY
+    // verified, instead of at registration time (non-blocking). ----
+    sendEmail(
+      user.email,
+      "Welcome to PiaraPakistan!",
+      `<h2>Welcome to PiaraPakistan, ${user.firstName}!</h2>
+       <p>Your account is now verified and ready to use.</p>
+       ${
+         user.kycStatus === "pending"
+           ? `<p>Your seller/shop documents are now under review by our team. This is usually completed within 24 hours — you'll get an email and SMS the moment your account is verified, even if it happens sooner.</p>`
+           : ""
+       }
+       <p>Thanks for joining Pakistan's trusted marketplace.<br/>— Team PiaraPakistan</p>`
+    );
 
     const token = generateToken(user._id, user.role);
     return res.status(200).json({
