@@ -28,7 +28,7 @@ const dispatchOtp = async (user, otpCode, method = "email") => {
   if (method === "sms") {
     const smsOk = await sendSMS(
       user.phone,
-      `PiaraPakistan: Your verification code is ${otpCode}. It expires in 10 minutes.`
+      `PiaraPakistan: Your verification code is ${otpCode}. It expires in 2 minutes.`
     );
     if (!smsOk) {
       console.warn(`[OTP] SMS delivery failed/unconfigured for ${user.phone}.`);
@@ -48,7 +48,7 @@ const dispatchOtp = async (user, otpCode, method = "email") => {
     "Your PiaraPakistan verification code",
     `<h2>Your verification code</h2>
      <p style="font-size:28px;font-weight:bold;letter-spacing:4px;">${otpCode}</p>
-     <p>This code expires in 10 minutes.</p>`
+     <p>This code expires in 2 minutes.</p>`
   ).catch((err) => console.error(`[OTP] Email dispatch failed for ${user.email}:`, err.message));
 };
 
@@ -211,7 +211,7 @@ const registerUser = async (req, res) => {
       identifier: user.phone,
       otp: otpCode,
       purpose: "register",
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      expiresAt: new Date(Date.now() + 2 * 60 * 1000), // 2 minutes
     });
     await dispatchOtp(user, otpCode, chosenOtpMethod);
 
@@ -318,7 +318,7 @@ const resendOtp = async (req, res) => {
       identifier: phone,
       otp: otpCode,
       purpose: "register",
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 2 * 60 * 1000), // 2 minutes
     });
     await dispatchOtp(user, otpCode, method);
 
