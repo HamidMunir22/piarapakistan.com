@@ -15,10 +15,10 @@ const Categories = () => {
   return (
     <div className="container" style={{ padding: "40px 20px 60px" }}>
       <h1 style={{ fontSize: 28 }}>Categories</h1>
-      <p style={{ color: "var(--pp-muted)" }}>Apni zaroorat ke mutabiq category chunein</p>
+      <p style={{ color: "var(--pp-muted)" }}>Choose a category that matches your need</p>
 
       {loading ? (
-        <p style={{ marginTop: 30 }}>Load ho raha hai...</p>
+        <p style={{ marginTop: 30 }}>Loading...</p>
       ) : (
         <div className="categories-grid">
           {categories.map((c) => (

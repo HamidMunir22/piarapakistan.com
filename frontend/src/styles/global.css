@@ -769,11 +769,12 @@ button {
   opacity: 1;
 }
 
-/* Category / listing cards get depth on hover even without JS tracking (fallback) */
-.category-card,
-.listing-card {
-  transform-style: preserve-3d;
-}
+/* NOTE: category-card / listing-card intentionally do NOT get their own
+   transform-style: preserve-3d — they're always wrapped by <Tilt>, which
+   already applies it on .tilt-card. Duplicating it here, combined with
+   .listing-card's overflow: hidden (for the rounded image corners), caused
+   a white-flash/blank-rectangle rendering glitch on mobile Chrome during
+   the tilt transition. */
 
 /* ---- Hero 3D scene (Home page) ---- */
 .hero-3d-scene {
