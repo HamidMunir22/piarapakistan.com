@@ -154,10 +154,18 @@ button {
   min-height: calc(100vh - 68px);
   display: flex;
   align-items: stretch;
+  overflow-x: hidden; /* safety net: a form field that's briefly wider than
+                         its column (e.g. while editing CSS) should scroll
+                         inside its own box, never push the whole page sideways */
 }
 
 .auth-side {
-  flex: 1;
+  /* Was flex: 1 (equal 50/50 split with the form column), which made this
+     solid-color panel look oversized next to a comparatively small ~460px
+     form card. Fixed width share instead, so the form gets noticeably more
+     room. */
+  flex: 0 1 38%;
+  min-width: 0;
   background: linear-gradient(160deg, var(--pp-green-dark), var(--pp-green) 55%, var(--pp-orange) 130%);
   color: white;
   display: none;
@@ -196,7 +204,10 @@ button {
 }
 
 .auth-form-col {
-  flex: 1;
+  flex: 1 1 62%;
+  min-width: 0; /* flex items default to min-width:auto, which can let a
+                   wide child (e.g. the 2-column form-grid) force this
+                   column wider than its share and overflow the page */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -205,12 +216,13 @@ button {
 
 .auth-card {
   width: 100%;
-  max-width: 460px;
+  max-width: 560px; /* was 460px — widened now that its column has more room */
   background: var(--pp-white);
   border-radius: var(--pp-radius);
   padding: 36px;
   box-shadow: var(--pp-shadow);
   border: 1px solid var(--pp-border);
+  box-sizing: border-box;
 }
 
 .auth-card h1 {
@@ -1203,6 +1215,20 @@ button {
   color: white;
   padding: 56px 20px;
   text-align: center;
+}
+
+/* Used on About — a light background instead of the green gradient, so the
+   orange "Piara" / green "Pakistan" heading text is actually readable
+   (dark green text on a dark green gradient background is invisible). */
+.page-hero-light {
+  background: linear-gradient(150deg, var(--pp-cream), var(--pp-white) 70%);
+  color: var(--pp-ink);
+  border-bottom: 1px solid var(--pp-border);
+}
+
+.page-hero-light p {
+  color: var(--pp-muted);
+  opacity: 1;
 }
 
 .page-hero h1 {
