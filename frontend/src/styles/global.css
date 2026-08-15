@@ -1923,3 +1923,147 @@ button {
   background: linear-gradient(135deg, rgba(245, 137, 30, 0.14), rgba(245, 137, 30, 0.05));
   box-shadow: 0 8px 18px rgba(240, 129, 42, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
+
+/* ==========================================================================
+   Role tabs — icon + label layout, icon "pops" when its role is active
+   ========================================================================== */
+.role-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 14px 8px;
+  cursor: pointer;
+}
+
+.role-tab-icon {
+  color: var(--pp-muted);
+  transition: color 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.role-tab.active .role-tab-icon {
+  color: var(--pp-orange-dark);
+  transform: scale(1.15) translateY(-2px);
+}
+
+/* ==========================================================================
+   Icon inside form inputs — left-aligned icon, input text shifted right.
+   Icon brightens to green when the field is focused, tying back into the
+   brand color and giving every keystroke a small bit of visual feedback.
+   ========================================================================== */
+.input-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon-wrap .input-icon {
+  position: absolute;
+  left: 13px;
+  color: var(--pp-muted);
+  pointer-events: none;
+  transition: color 0.15s ease;
+  z-index: 1;
+}
+
+.input-icon-wrap input,
+.input-icon-wrap select {
+  width: 100%;
+  padding-left: 38px !important;
+}
+
+.input-icon-wrap:focus-within .input-icon {
+  color: var(--pp-green-dark);
+}
+
+/* ==========================================================================
+   Buttons — a small tactile "press" so clicks feel physical, not flat
+   ========================================================================== */
+.btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.otp-method-option:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* ==========================================================================
+   Animated decorative background on the auth-side panel — slow drifting
+   soft-glow orbs behind the headline, instead of a flat gradient. Purely
+   decorative (aria-hidden not needed, it's a CSS-only background layer).
+   ========================================================================== */
+.auth-side {
+  isolation: isolate;
+}
+
+.auth-side::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.16), transparent 40%),
+    radial-gradient(circle at 75% 65%, rgba(255, 255, 255, 0.12), transparent 35%),
+    radial-gradient(circle at 50% 90%, rgba(255, 255, 255, 0.1), transparent 40%);
+  animation: pp-orb-drift 16s ease-in-out infinite alternate;
+  z-index: 0;
+}
+
+@keyframes pp-orb-drift {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(3%, -2%) rotate(4deg);
+  }
+  100% {
+    transform: translate(-2%, 3%) rotate(-3deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-side::before {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Verify OTP page — shield icon badge above the heading
+   ========================================================================== */
+.verify-icon-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(135deg, var(--pp-green), var(--pp-green-dark));
+  box-shadow: 0 8px 18px rgba(30, 122, 52, 0.28);
+  margin-bottom: 14px;
+  animation: pp-badge-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes pp-badge-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(-10deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* ==========================================================================
+   OTP digit inputs — a bit more "3D" (raised, glow on focus, pop on fill)
+   ========================================================================== */
+.otp-inputs input {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.otp-inputs input:focus {
+  box-shadow: 0 0 0 3px rgba(30, 122, 52, 0.15);
+  transform: translateY(-2px);
+}

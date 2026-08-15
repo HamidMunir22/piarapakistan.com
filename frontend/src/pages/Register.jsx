@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin } from "lucide-react";
+import { MapPin, User, Mail, Phone, Lock, ShoppingBag, Wrench, Store, Users } from "lucide-react";
 import api from "../api/client";
 import { fetchCategories } from "../api/listings";
 import { fetchBanks } from "../api/admin.js";
@@ -168,13 +168,18 @@ const Register = () => {
           <p className="subtitle">Just 2 minutes — secure and simple</p>
 
           <div className="role-tabs">
-            {["buyer", "seller", "shop"].map((r) => (
+            {[
+              { key: "buyer", label: "Buyer", Icon: ShoppingBag },
+              { key: "seller", label: "Service Seller", Icon: Wrench },
+              { key: "shop", label: "Shop Owner", Icon: Store },
+            ].map(({ key, label, Icon }) => (
               <div
-                key={r}
-                className={`role-tab ${form.role === r ? "active" : ""}`}
-                onClick={() => handleRoleChange(r)}
+                key={key}
+                className={`role-tab ${form.role === key ? "active" : ""}`}
+                onClick={() => handleRoleChange(key)}
               >
-                {r === "buyer" ? "Buyer" : r === "seller" ? "Service Seller" : "Shop Owner"}
+                <Icon size={20} className="role-tab-icon" />
+                <span>{label}</span>
               </div>
             ))}
           </div>
@@ -189,7 +194,8 @@ const Register = () => {
                 className={`otp-method-option ${otpMethod === "email" ? "active" : ""}`}
                 onClick={() => setOtpMethod("email")}
               >
-                📧 Email
+                <Mail size={20} />
+                Email
                 <span className="otp-method-sub">Code sent to your email</span>
               </button>
               <button
@@ -197,7 +203,8 @@ const Register = () => {
                 className={`otp-method-option ${otpMethod === "sms" ? "active" : ""}`}
                 onClick={() => setOtpMethod("sms")}
               >
-                📱 Mobile Number
+                <Phone size={20} />
+                Mobile Number
                 <span className="otp-method-sub">Code sent via SMS to your SIM</span>
               </button>
             </div>
@@ -212,51 +219,72 @@ const Register = () => {
             <div className="form-grid">
               <div className="field">
                 <label>First Name</label>
-                <input name="firstName" value={form.firstName} onChange={handleChange} required />
+                <div className="input-icon-wrap">
+                  <User size={16} className="input-icon" />
+                  <input name="firstName" value={form.firstName} onChange={handleChange} required />
+                </div>
               </div>
               <div className="field">
                 <label>Last Name</label>
-                <input name="lastName" value={form.lastName} onChange={handleChange} required />
+                <div className="input-icon-wrap">
+                  <User size={16} className="input-icon" />
+                  <input name="lastName" value={form.lastName} onChange={handleChange} required />
+                </div>
               </div>
               <div className="field">
                 <label>Gender</label>
-                <select name="gender" value={form.gender} onChange={handleChange} required>
-                  <option value="">Select gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
+                <div className="input-icon-wrap">
+                  <Users size={16} className="input-icon" />
+                  <select name="gender" value={form.gender} onChange={handleChange} required>
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
               </div>
               <div className="field">
                 <label>Email {otpMethod === "email" && <span className="req-badge">code sent here</span>}</label>
-                <input type="email" name="email" value={form.email} onChange={handleChange} required />
+                <div className="input-icon-wrap">
+                  <Mail size={16} className="input-icon" />
+                  <input type="email" name="email" value={form.email} onChange={handleChange} required />
+                </div>
               </div>
               <div className="field">
                 <label>
                   Phone Number {otpMethod === "sms" && <span className="req-badge">code sent here</span>}
                 </label>
-                <input
-                  name="phone"
-                  placeholder="+92 3XX XXXXXXX"
-                  value={form.phone}
-                  onChange={handleChange}
-                  required
-                />
+                <div className="input-icon-wrap">
+                  <Phone size={16} className="input-icon" />
+                  <input
+                    name="phone"
+                    placeholder="+92 3XX XXXXXXX"
+                    value={form.phone}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
               <div className="field">
                 <label>Password</label>
-                <input type="password" name="password" value={form.password} onChange={handleChange} required minLength={8} />
+                <div className="input-icon-wrap">
+                  <Lock size={16} className="input-icon" />
+                  <input type="password" name="password" value={form.password} onChange={handleChange} required minLength={8} />
+                </div>
                 <PasswordStrength password={form.password} />
               </div>
               <div className="field">
                 <label>Confirm Password</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  required
-                />
+                <div className="input-icon-wrap">
+                  <Lock size={16} className="input-icon" />
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
               <div className="field full">
                 <label>Profile Picture {!isSellerOrShop && "(optional)"}</label>

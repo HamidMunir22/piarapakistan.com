@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { ShieldCheck } from "lucide-react";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -72,6 +73,9 @@ const VerifyOtp = () => {
       </div>
       <div className="auth-form-col">
         <div className="auth-card">
+          <div className="verify-icon-badge">
+            <ShieldCheck size={28} />
+          </div>
           <h1>Verify Your Phone</h1>
           <p className="subtitle">
             {phone

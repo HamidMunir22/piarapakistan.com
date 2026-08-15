@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { User, Lock } from "lucide-react";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext.jsx";
 import ReCaptcha from "../components/ReCaptcha.jsx";
@@ -48,20 +49,26 @@ const Login = () => {
           <form onSubmit={handleSubmit}>
             <div className="field">
               <label>Email or Phone Number</label>
-              <input
-                value={form.emailOrPhone}
-                onChange={(e) => setForm({ ...form, emailOrPhone: e.target.value })}
-                required
-              />
+              <div className="input-icon-wrap">
+                <User size={16} className="input-icon" />
+                <input
+                  value={form.emailOrPhone}
+                  onChange={(e) => setForm({ ...form, emailOrPhone: e.target.value })}
+                  required
+                />
+              </div>
             </div>
             <div className="field">
               <label>Password</label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                required
-              />
+              <div className="input-icon-wrap">
+                <Lock size={16} className="input-icon" />
+                <input
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  required
+                />
+              </div>
               <div className="forgot-password-link">
                 <Link to="/forgot-password">Forgot password?</Link>
               </div>

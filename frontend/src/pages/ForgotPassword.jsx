@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Mail, Phone, KeyRound, Lock } from "lucide-react";
 import api from "../api/client";
 import PasswordStrength, { evaluatePassword } from "../components/PasswordStrength.jsx";
 
@@ -115,27 +116,32 @@ const ForgotPassword = () => {
                     className={`otp-method-option ${method === "email" ? "active" : ""}`}
                     onClick={() => setMethod("email")}
                   >
-                    📧 Email
+                    <Mail size={20} />
+                    Email
                   </button>
                   <button
                     type="button"
                     className={`otp-method-option ${method === "sms" ? "active" : ""}`}
                     onClick={() => setMethod("sms")}
                   >
-                    📱 SMS (mobile number)
+                    <Phone size={20} />
+                    SMS (mobile number)
                   </button>
                 </div>
               </div>
 
               <div className="field">
                 <label>{method === "sms" ? "Mobile Number" : "Email Address"}</label>
-                <input
-                  type={method === "sms" ? "text" : "email"}
-                  placeholder={method === "sms" ? "+92 3XX XXXXXXX" : "you@example.com"}
-                  value={emailOrPhone}
-                  onChange={(e) => setEmailOrPhone(e.target.value)}
-                  required
-                />
+                <div className="input-icon-wrap">
+                  {method === "sms" ? <Phone size={16} className="input-icon" /> : <Mail size={16} className="input-icon" />}
+                  <input
+                    type={method === "sms" ? "text" : "email"}
+                    placeholder={method === "sms" ? "+92 3XX XXXXXXX" : "you@example.com"}
+                    value={emailOrPhone}
+                    onChange={(e) => setEmailOrPhone(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
               <button className="btn btn-primary btn-block" disabled={loading} style={{ marginTop: 10 }}>
@@ -148,34 +154,43 @@ const ForgotPassword = () => {
             <form onSubmit={handleReset}>
               <div className="field">
                 <label>Reset Code</label>
-                <input
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
-                  inputMode="numeric"
-                  maxLength={6}
-                  placeholder="6-digit code"
-                  required
-                />
+                <div className="input-icon-wrap">
+                  <KeyRound size={16} className="input-icon" />
+                  <input
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="6-digit code"
+                    required
+                  />
+                </div>
               </div>
               <div className="field">
                 <label>New Password</label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  minLength={8}
-                  required
-                />
+                <div className="input-icon-wrap">
+                  <Lock size={16} className="input-icon" />
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    minLength={8}
+                    required
+                  />
+                </div>
                 <PasswordStrength password={newPassword} />
               </div>
               <div className="field">
                 <label>Confirm New Password</label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
+                <div className="input-icon-wrap">
+                  <Lock size={16} className="input-icon" />
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
               <button className="btn btn-primary btn-block" disabled={loading} style={{ marginTop: 10 }}>
