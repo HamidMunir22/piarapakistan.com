@@ -551,7 +551,7 @@ button {
 /* Listing cards fade/slide in as results arrive, staggered slightly per
    card, instead of just popping into existence all at once. */
 .listing-card-enter {
-  animation: pp-card-in 0.35s ease both;
+  animation: pp-card-in-3d 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1623,6 +1623,29 @@ button {
   }
 }
 
+/* "Cheesy" 3D flip entrance — used when a category is opened (Search results
+   grid) and on the Categories grid's own first load. Cards swing in out of
+   a side-tilt in 3D space with a little bouncy overshoot before settling
+   flat, staggered per-card via inline animationDelay so a full grid doesn't
+   just pop into existence all at once. Intentionally NOT combined with
+   transform-style: preserve-3d on the wrapper (see note near .tilt-card
+   above) — the perspective() call inside the transform itself is enough to
+   read as 3D without touching that nested-3D-context bug. */
+@keyframes pp-card-in-3d {
+  0% {
+    opacity: 0;
+    transform: perspective(900px) rotateY(-45deg) rotateX(8deg) translateY(26px) scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: perspective(900px) rotateY(8deg) rotateX(-2deg) translateY(-4px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(900px) rotateY(0deg) rotateX(0deg) translateY(0) scale(1);
+  }
+}
+
 /* ---- Skeleton placeholders (Categories page first load, etc.) ---- */
 @keyframes pp-skeleton-pulse {
   0%,
@@ -1661,7 +1684,7 @@ button {
 }
 
 .categories-grid.categories-grid-loaded > * {
-  animation: pp-card-in 0.35s ease both;
+  animation: pp-card-in-3d 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

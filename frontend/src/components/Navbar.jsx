@@ -86,9 +86,7 @@ const Navbar = () => {
           </>
         )}
         {isAdmin && <NavLink to="/admin" className={navLinkClass}>{t("nav.adminPanel")}</NavLink>}
-        <NavLink to="/about" className={navLinkClass}>{t("nav.about")}</NavLink>
         <NavLink to="/contact" className={navLinkClass}>{t("nav.contact")}</NavLink>
-        <NavLink to="/help" className={navLinkClass}>{t("nav.help")}</NavLink>
       </div>
 
       <form onSubmit={handleSearchSubmit} className="navbar-search-desktop">
@@ -195,9 +193,7 @@ const Navbar = () => {
           {user && !isSellerOrShop && (
             <NavLink to="/orders" className={navLinkClass} onClick={closeMobile}>{t("nav.myOrders")}</NavLink>
           )}
-          <NavLink to="/about" className={navLinkClass} onClick={closeMobile}>{t("nav.about")}</NavLink>
           <NavLink to="/contact" className={navLinkClass} onClick={closeMobile}>{t("nav.contact")}</NavLink>
-          <NavLink to="/help" className={navLinkClass} onClick={closeMobile}>{t("nav.help")}</NavLink>
 
           <div className="navbar-mobile-lang-label">{t("nav.languageLabel")}</div>
           <div className="navbar-mobile-lang-options">

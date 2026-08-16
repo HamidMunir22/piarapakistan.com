@@ -5,7 +5,7 @@
 const translations = {
   en: {
     "nav.home": "Home",
-    "nav.categories": "Categories",
+    "nav.categories": "Services",
     "nav.dashboard": "Dashboard",
     "nav.orders": "Orders",
     "nav.adminPanel": "Admin Panel",
@@ -95,7 +95,7 @@ const translations = {
     "footer.privacy": "Privacy Policy",
     "footer.rights": "PiaraPakistan. All rights reserved.",
 
-    "categories.subtitle": "Choose a category that matches your need",
+    "categories.subtitle": "Choose a service that matches your need",
     "categories.electrician": "Electrician",
     "categories.ac-repair": "AC Sale/Purchase & Repair",
     "categories.plumber": "Plumber",
@@ -553,7 +553,7 @@ const translations = {
   },
   ur: {
     "nav.home": "ہوم",
-    "nav.categories": "کیٹیگریز",
+    "nav.categories": "خدمات",
     "nav.dashboard": "ڈیش بورڈ",
     "nav.orders": "آرڈرز",
     "nav.adminPanel": "ایڈمن پینل",
@@ -643,7 +643,7 @@ const translations = {
     "footer.privacy": "پرائیویسی پالیسی",
     "footer.rights": "پیارا پاکستان۔ جملہ حقوق محفوظ ہیں۔",
 
-    "categories.subtitle": "اپنی ضرورت کے مطابق کیٹیگری منتخب کریں",
+    "categories.subtitle": "اپنی ضرورت کے مطابق خدمت منتخب کریں",
     "categories.electrician": "الیکٹریشن",
     "categories.ac-repair": "اے سی کی خرید و فروخت اور مرمت",
     "categories.plumber": "پلمبر",
@@ -1101,7 +1101,7 @@ const translations = {
   },
   pa: {
     "nav.home": "گھر",
-    "nav.categories": "کیٹیگریاں",
+    "nav.categories": "خدمات",
     "nav.dashboard": "ڈیش بورڈ",
     "nav.orders": "آرڈر",
     "nav.adminPanel": "ایڈمن پینل",
@@ -1191,7 +1191,7 @@ const translations = {
     "footer.privacy": "پرائیویسی پالیسی",
     "footer.rights": "پیارا پاکستان۔ سارے حق محفوظ نیں۔",
 
-    "categories.subtitle": "اپنی ضرورت دے مطابق کیٹیگری چنو",
+    "categories.subtitle": "اپنی ضرورت دے مطابق خدمت چنو",
     "categories.electrician": "الیکٹریشن",
     "categories.ac-repair": "اے سی دی خرید و فروخت تے مرمت",
     "categories.plumber": "پلمبر",
@@ -1649,7 +1649,7 @@ const translations = {
   },
   ps: {
     "nav.home": "کور",
-    "nav.categories": "کټګورۍ",
+    "nav.categories": "خدمتونه",
     "nav.dashboard": "ډشبورډ",
     "nav.orders": "آرډرونه",
     "nav.adminPanel": "د اډمین پینل",
@@ -1739,7 +1739,7 @@ const translations = {
     "footer.privacy": "د محرمیت تګلاره",
     "footer.rights": "پیارا پاکستان۔ ټول حقوق خوندي دي۔",
 
-    "categories.subtitle": "هغه کټګورۍ وټاکئ چې ستاسو اړتیا سره سمون لري",
+    "categories.subtitle": "هغه خدمت وټاکئ چې ستاسو اړتیا سره سمون لري",
     "categories.electrician": "بریښناکار",
     "categories.ac-repair": "د اے سي پلورل، اخیستل او مرمت",
     "categories.plumber": "نلدار / پلمبر",
@@ -2197,7 +2197,7 @@ const translations = {
   },
   sd: {
     "nav.home": "گھر",
-    "nav.categories": "ڪيٽيگريون",
+    "nav.categories": "خدمتون",
     "nav.dashboard": "ڊيش بورڊ",
     "nav.orders": "آرڊر",
     "nav.adminPanel": "ايڊمن پينل",
@@ -2287,7 +2287,7 @@ const translations = {
     "footer.privacy": "رازداري پاليسي",
     "footer.rights": "پيارا پاڪستان۔ سمورا حق محفوظ آهن۔",
 
-    "categories.subtitle": "اها ڪيٽيگري چونڊيو جيڪا توهان جي ضرورت سان ملي",
+    "categories.subtitle": "اها خدمت چونڊيو جيڪا توهان جي ضرورت سان ملي",
     "categories.electrician": "اليڪٽريشن",
     "categories.ac-repair": "اي سي جي خريد و فروخت ۽ مرمت",
     "categories.plumber": "پلمبر",
@@ -2745,7 +2745,7 @@ const translations = {
   },
   skr: {
     "nav.home": "گھر",
-    "nav.categories": "کیٹیگریاں",
+    "nav.categories": "خدمات",
     "nav.dashboard": "ڈیش بورڈ",
     "nav.orders": "آرڈر",
     "nav.adminPanel": "ایڈمن پینل",
@@ -2835,7 +2835,7 @@ const translations = {
     "footer.privacy": "پرائیویسی پالیسی",
     "footer.rights": "پیارا پاکستان۔ سارے حق محفوظ ہن۔",
 
-    "categories.subtitle": "اوہ کیٹیگری چونو جیڑھی تہاڈی ضرورت نال ملدی اے",
+    "categories.subtitle": "اوہ خدمت چونو جیڑھی تہاڈی ضرورت نال ملدی اے",
     "categories.electrician": "الیکٹریشن",
     "categories.ac-repair": "اے سی دی خرید و فروخت تے مرمت",
     "categories.plumber": "پلمبر",
@@ -3293,7 +3293,7 @@ const translations = {
   },
   bal: {
     "nav.home": "کدگ",
-    "nav.categories": "کیٹیگریان",
+    "nav.categories": "خدمتان",
     "nav.dashboard": "ڈیش بورڈ",
     "nav.orders": "آرڈرے",
     "nav.adminPanel": "ایڈمن پینل",
@@ -3383,7 +3383,7 @@ const translations = {
     "footer.privacy": "رازداری پالیسی",
     "footer.rights": "پیارا پاکستان۔ همہ حق محفوظ ئنت۔",
 
-    "categories.subtitle": "ہماں کیٹیگری گزین کن کہ شمے ضرورت ءَ گوں میل کنت",
+    "categories.subtitle": "ہماں خدمت گزین کن کہ شمے ضرورت ءَ گوں میل کنت",
     "categories.electrician": "بجلی کار",
     "categories.ac-repair": "اے سی ءِ خرید و فروخت و ترمیم",
     "categories.plumber": "پلمبر",
