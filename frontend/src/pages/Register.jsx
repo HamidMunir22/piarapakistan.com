@@ -7,6 +7,7 @@ import { fetchBanks } from "../api/admin.js";
 import ReCaptcha from "../components/ReCaptcha.jsx";
 import PasswordStrength, { evaluatePassword } from "../components/PasswordStrength.jsx";
 import { useLanguage } from "../context/LanguageContext.jsx";
+import { categoryLabel } from "../utils/categoryLabel.js";
 
 const initialState = {
   role: "",
@@ -380,7 +381,7 @@ const Register = () => {
                       <option value="">{t("auth.selectCategory")}</option>
                       {categories.map((c) => (
                         <option key={c.id} value={c.id}>
-                          {c.label}
+                          {categoryLabel(c, t)}
                         </option>
                       ))}
                     </select>

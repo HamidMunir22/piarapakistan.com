@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { fetchCategories, fetchListingById, createListing, updateListing } from "../../api/listings";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
+import { categoryLabel } from "../../utils/categoryLabel.js";
 
 const ListingForm = () => {
   const { t } = useLanguage();
@@ -98,7 +99,7 @@ const ListingForm = () => {
               <option value="">{t("common.select")}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.label}
+                  {categoryLabel(c, t)}
                 </option>
               ))}
             </select>

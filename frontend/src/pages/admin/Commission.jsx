@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchCommission, updateCommission, fetchUsers, updateUserCommission } from "../../api/admin.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
+import { categoryLabel } from "../../utils/categoryLabel.js";
 
 const Commission = () => {
   const { t } = useLanguage();
@@ -162,7 +163,7 @@ const Commission = () => {
             return (
               <tr key={s._id}>
                 <td>{s.businessName || `${s.firstName} ${s.lastName}`}</td>
-                <td>{s.category}</td>
+                <td>{categoryLabel({ id: s.category, label: s.category }, t)}</td>
                 <td>
                   <select
                     value={overrideType}

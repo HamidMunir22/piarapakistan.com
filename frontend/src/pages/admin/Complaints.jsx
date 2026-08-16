@@ -14,6 +14,15 @@ const ComplaintRow = ({ complaint, onUpdated }) => {
     rejected: t("help.status.rejected"),
   };
 
+  const COMPLAINT_CATEGORY_LABELS = {
+    fraud: t("admin.complaintCategory.fraud"),
+    payment: t("admin.complaintCategory.payment"),
+    quality: t("admin.complaintCategory.quality"),
+    delivery: t("admin.complaintCategory.delivery"),
+    account: t("admin.complaintCategory.account"),
+    other: t("admin.complaintCategory.other"),
+  };
+
   const handleAction = async (status) => {
     setBusy(true);
     try {
@@ -30,7 +39,7 @@ const ComplaintRow = ({ complaint, onUpdated }) => {
         <div>
           <div style={{ fontWeight: 700, fontSize: 15 }}>{complaint.subject}</div>
           <div style={{ fontSize: 12.5, color: "var(--pp-muted)", marginTop: 2 }}>
-            {complaint.user?.firstName} {complaint.user?.lastName} ({complaint.user?.role}) • {complaint.category}
+            {complaint.user?.firstName} {complaint.user?.lastName} ({complaint.user?.role}) • {COMPLAINT_CATEGORY_LABELS[complaint.category] || complaint.category}
             {complaint.order && ` • ${t("admin.orderNumberPrefix")} ${complaint.order.orderNumber}`}
           </div>
         </div>

@@ -5,6 +5,7 @@ import ListingCard from "../components/ListingCard.jsx";
 import MapView from "../components/MapView.jsx";
 import { MapPin, List, Map as MapIcon, SlidersHorizontal, Loader2 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext.jsx";
+import { categoryLabel } from "../utils/categoryLabel.js";
 
 const Search = () => {
   const { t } = useLanguage();
@@ -110,7 +111,7 @@ const Search = () => {
                 <option value="">{t("search.allCategories")}</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.label}
+                    {categoryLabel(c, t)}
                   </option>
                 ))}
               </select>

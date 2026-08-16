@@ -3,6 +3,7 @@ import { fetchAdminListings, toggleListingAdmin, deleteListingAdmin } from "../.
 import { formatPKR } from "../../utils/format.js";
 import { Pause, Play, Trash2 } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext.jsx";
+import { categoryLabel } from "../../utils/categoryLabel.js";
 
 const Listings = () => {
   const { t } = useLanguage();
@@ -82,7 +83,7 @@ const Listings = () => {
                     <div style={{ fontSize: 10.5, color: "var(--pp-danger)" }}>{t("admin.kycNotApproved")}</div>
                   )}
                 </td>
-                <td>{l.category}</td>
+                <td>{categoryLabel({ id: l.category, label: l.category }, t)}</td>
                 <td>{formatPKR(l.price)}</td>
                 <td>
                   <span className={`status-pill ${l.isActive ? "active" : "paused"}`}>

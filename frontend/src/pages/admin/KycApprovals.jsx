@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { fetchPendingKyc, approveKyc, rejectKyc } from "../../api/admin.js";
 import { resolveImageUrl } from "../../utils/format.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
+import { categoryLabel } from "../../utils/categoryLabel.js";
 
 const KycApprovals = () => {
   const { t } = useLanguage();
@@ -62,7 +63,7 @@ const KycApprovals = () => {
                     {u.firstName} {u.lastName} — <span style={{ color: "var(--pp-orange-dark)" }}>{u.role}</span>
                   </div>
                   <div style={{ fontSize: 13, color: "var(--pp-muted)" }}>
-                    {u.businessName} • {u.category === "other" ? u.customCategoryName : u.category} • {u.city}
+                    {u.businessName} • {u.category === "other" ? u.customCategoryName : categoryLabel({ id: u.category, label: u.category }, t)} • {u.city}
                     {u.area ? `, ${u.area}` : ""}
                   </div>
                   <div style={{ fontSize: 12.5, color: "var(--pp-muted)", marginTop: 4 }}>
