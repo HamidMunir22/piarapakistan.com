@@ -135,7 +135,7 @@ const Search = () => {
                 <option value="product">{t("search.typeProducts")}</option>
               </select>
             </div>
-            <div className="form-grid">
+            <div className="filters-price-grid">
               <div className="field">
                 <label>{t("search.minPrice")}</label>
                 <input

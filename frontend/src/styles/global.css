@@ -496,6 +496,20 @@ button {
   gap: 20px;
 }
 
+/* Min/Max Price in the filters sidebar get their own always-single-column
+   layout instead of the shared .form-grid. .filters-panel is a permanently
+   fixed 260px-wide sidebar (see .search-layout) on any screen wide enough
+   to show it at all -- .form-grid's "stack below 560px" rule checks the
+   whole browser window's width, not this sidebar's own (always ~220px
+   content) width, so on every normal desktop window (>800px) it never
+   stacked and Max Price overflowed past the card edge. Always stacking
+   here removes the dependency on that mismatched breakpoint entirely. */
+.filters-price-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
 /* ---- Search results header: spinner + view toggle ---- */
 .search-results-count {
   display: flex;
