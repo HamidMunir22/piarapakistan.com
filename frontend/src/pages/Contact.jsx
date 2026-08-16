@@ -46,7 +46,7 @@ const Contact = () => {
             <div className="contact-info-icon"><Mail size={18} /></div>
             <div>
               <b>{t("contact.emailLabel")}</b>
-              <div>services@piarapakistan.com</div>
+              <div>services@gmail.com</div>
             </div>
           </div>
           <div className="contact-info-item">

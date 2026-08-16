@@ -80,7 +80,7 @@ const Terms = () => {
       </p>
 
       <h2>{t("terms.h10")}</h2>
-      <p>Questions about these Terms can be sent to services@piarapakistan.com.</p>
+      <p>Questions about these Terms can be sent to services@gmail.com.</p>
     </div>
   );
 };
