@@ -6,8 +6,10 @@ import MapView from "../components/MapView.jsx";
 import { formatPKR, resolveImageUrl } from "../utils/format.js";
 import { useCart } from "../context/CartContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 const ListingDetail = () => {
+  const { t } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
@@ -24,8 +26,8 @@ const ListingDetail = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="container" style={{ padding: 60 }}>Loading...</div>;
-  if (!listing) return <div className="container" style={{ padding: 60 }}>Listing not found.</div>;
+  if (loading) return <div className="container" style={{ padding: 60 }}>{t("common.loading")}</div>;
+  if (!listing) return <div className="container" style={{ padding: 60 }}>{t("listing.notFound")}</div>;
 
   const seller = listing.seller || {};
   const isProduct = listing.listingType === "product";
@@ -88,7 +90,7 @@ const ListingDetail = () => {
             </span>
             <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <Star size={14} fill="var(--pp-orange)" color="var(--pp-orange)" />
-              {listing.ratingCount > 0 ? `${listing.ratingAverage.toFixed(1)} (${listing.ratingCount} reviews)` : "Abhi koi review nahi"}
+              {listing.ratingCount > 0 ? `${listing.ratingAverage.toFixed(1)} (${listing.ratingCount} ${t("listing.reviewsSuffix")})` : t("listing.noReviews")}
             </span>
           </div>
           <p style={{ lineHeight: 1.7, color: "var(--pp-ink)" }}>{listing.description}</p>
@@ -98,24 +100,24 @@ const ListingDetail = () => {
           <div className="auth-card" style={{ position: "sticky", top: 90 }}>
             <div style={{ fontSize: 26, fontWeight: 800, color: "var(--pp-green-dark)", marginBottom: 6 }}>
               {formatPKR(listing.price)}
-              {listing.priceType === "hourly" && <span style={{ fontSize: 14, fontWeight: 500 }}> / ghanta</span>}
-              {listing.priceType === "starting_at" && <span style={{ fontSize: 14, fontWeight: 500 }}> se shuru</span>}
+              {listing.priceType === "hourly" && <span style={{ fontSize: 14, fontWeight: 500 }}> {t("listing.perHourSuffix")}</span>}
+              {listing.priceType === "starting_at" && <span style={{ fontSize: 14, fontWeight: 500 }}> {t("listing.onwardsSuffix")}</span>}
             </div>
             {listing.listingType === "product" && (
               <div style={{ fontSize: 13, color: "var(--pp-muted)", marginBottom: 16 }}>
-                {listing.stock > 0 ? `Stock mein: ${listing.stock}` : "Stock khatam"}
+                {listing.stock > 0 ? `${t("listing.inStockPrefix")} ${listing.stock}` : t("listing.outOfStock")}
               </div>
             )}
 
             {isOwnListing ? (
-              <div className="alert alert-error">Ye aapki apni listing hai.</div>
+              <div className="alert alert-error">{t("listing.ownListingNotice")}</div>
             ) : outOfStock ? (
-              <div className="alert alert-error">Filhal stock khatam hai.</div>
+              <div className="alert alert-error">{t("listing.outOfStockNotice")}</div>
             ) : (
               <>
                 {isProduct && (
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600 }}>Quantity</span>
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>{t("listing.quantityLabel")}</span>
                     <div style={{ display: "flex", alignItems: "center", border: "1.5px solid var(--pp-border)", borderRadius: 999 }}>
                       <button type="button" className="icon-btn" onClick={() => setQty((q) => Math.max(1, q - 1))}>
                         <Minus size={14} />
@@ -129,14 +131,14 @@ const ListingDetail = () => {
                 )}
 
                 <button className="btn btn-primary btn-block" style={{ marginBottom: 10 }} onClick={handleBuyNow}>
-                  {isProduct ? "Abhi Khareedein" : "Abhi Book Karein"}
+                  {isProduct ? t("listing.buyNowBtn") : t("listing.bookNowBtn")}
                 </button>
                 <button className="btn btn-secondary btn-block" onClick={handleAddToCart}>
-                  <ShoppingCart size={15} /> {added ? "Cart mein add ho gaya ✓" : "Cart mein Add Karein"}
+                  <ShoppingCart size={15} /> {added ? t("listing.addedToCartMsg") : t("listing.addToCartBtn")}
                 </button>
                 {seller.phone && (
                   <a href={`tel:${seller.phone}`} className="btn btn-secondary btn-block" style={{ marginTop: 10 }}>
-                    <Phone size={15} /> Seller ko Call Karein
+                    <Phone size={15} /> {t("listing.callSellerBtn")}
                   </a>
                 )}
                 <button
@@ -148,7 +150,7 @@ const ListingDetail = () => {
                       : navigate("/login")
                   }
                 >
-                  <MessageCircle size={15} /> Seller ko Message Karein
+                  <MessageCircle size={15} /> {t("listing.messageSellerBtn")}
                 </button>
               </>
             )}
@@ -168,14 +170,14 @@ const ListingDetail = () => {
       {listing.location?.coordinates?.some((c) => c !== 0) && (
         <div style={{ marginTop: 36 }}>
           <h3 style={{ fontSize: 17, marginBottom: 12 }}>
-            <MapPin size={16} style={{ verticalAlign: -2 }} /> Location
+            <MapPin size={16} style={{ verticalAlign: -2 }} /> {t("listing.locationTitle")}
           </h3>
           <MapView listings={[listing]} height={320} />
         </div>
       )}
 
       <div style={{ marginTop: 30 }}>
-        <Link to="/search" className="btn btn-secondary">← Wapas Search par jayein</Link>
+        <Link to="/search" className="btn btn-secondary">← {t("listing.backToSearch")}</Link>
       </div>
     </div>
   );

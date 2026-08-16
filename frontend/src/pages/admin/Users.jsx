@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { fetchUsers, suspendUser, unsuspendUser } from "../../api/admin.js";
 import { Ban, CheckCircle2 } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext.jsx";
 
 const Users = () => {
+  const { t } = useLanguage();
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);
   const [role, setRole] = useState("");
@@ -31,7 +33,7 @@ const Users = () => {
   };
 
   const handleSuspend = async (u) => {
-    const reason = window.prompt(`${u.firstName} ko suspend karne ki wajah likhein:`, "Policy violation");
+    const reason = window.prompt(`${t("admin.suspendPromptPrefix")} ${u.firstName}${t("admin.suspendPromptSuffix")}`, t("admin.suspendDefaultReason"));
     if (reason === null) return;
     setBusyId(u._id);
     try {
@@ -54,38 +56,38 @@ const Users = () => {
 
   return (
     <div>
-      <h1 style={{ fontSize: 24 }}>Users</h1>
-      <p style={{ color: "var(--pp-muted)", fontSize: 13.5, marginBottom: 16 }}>{total} total users</p>
+      <h1 style={{ fontSize: 24 }}>{t("admin.nav.users")}</h1>
+      <p style={{ color: "var(--pp-muted)", fontSize: 13.5, marginBottom: 16 }}>{total} {t("admin.totalUsersSuffix")}</p>
 
       <form onSubmit={handleSearchSubmit} style={{ display: "flex", gap: 10, marginBottom: 18, flexWrap: "wrap" }}>
         <input
-          placeholder="Naam, email, phone se search karein..."
+          placeholder={t("admin.searchNamePlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{ flex: 1, minWidth: 200, padding: "9px 12px", borderRadius: 10, border: "1.5px solid var(--pp-border)" }}
         />
         <select value={role} onChange={(e) => setRole(e.target.value)} style={{ padding: "9px 12px", borderRadius: 10, border: "1.5px solid var(--pp-border)" }}>
-          <option value="">Sab Roles</option>
-          <option value="buyer">Buyer</option>
-          <option value="seller">Seller</option>
-          <option value="shop">Shop</option>
+          <option value="">{t("admin.allRoles")}</option>
+          <option value="buyer">{t("auth.role.buyer")}</option>
+          <option value="seller">{t("admin.roleSellerShort")}</option>
+          <option value="shop">{t("admin.roleShopShort")}</option>
         </select>
-        <button type="submit" className="btn btn-primary">Search</button>
+        <button type="submit" className="btn btn-primary">{t("search.searchButton")}</button>
       </form>
 
       {loading ? (
-        <p>Load ho raha hai...</p>
+        <p>{t("common.loading")}</p>
       ) : (
         <table className="dashboard-table">
           <thead>
             <tr>
-              <th>Naam</th>
-              <th>Role</th>
-              <th>Contact</th>
-              <th>City</th>
-              <th>KYC</th>
-              <th>Status</th>
-              <th>Action</th>
+              <th>{t("admin.table.name")}</th>
+              <th>{t("admin.table.role")}</th>
+              <th>{t("admin.table.contact")}</th>
+              <th>{t("search.city")}</th>
+              <th>{t("admin.table.kyc")}</th>
+              <th>{t("dash.table.status")}</th>
+              <th>{t("admin.table.action")}</th>
             </tr>
           </thead>
           <tbody>
@@ -109,16 +111,16 @@ const Users = () => {
                 </td>
                 <td>
                   <span className={`status-pill ${u.isSuspended ? "paused" : "active"}`}>
-                    {u.isSuspended ? "Suspended" : "Active"}
+                    {u.isSuspended ? t("admin.suspended") : t("dash.active")}
                   </span>
                 </td>
                 <td>
                   {u.isSuspended ? (
-                    <button className="icon-btn" title="Unsuspend" disabled={busyId === u._id} onClick={() => handleUnsuspend(u)}>
+                    <button className="icon-btn" title={t("admin.unsuspend")} disabled={busyId === u._id} onClick={() => handleUnsuspend(u)}>
                       <CheckCircle2 size={16} />
                     </button>
                   ) : (
-                    <button className="icon-btn" title="Suspend" disabled={busyId === u._id} onClick={() => handleSuspend(u)}>
+                    <button className="icon-btn" title={t("admin.suspend")} disabled={busyId === u._id} onClick={() => handleSuspend(u)}>
                       <Ban size={16} />
                     </button>
                   )}

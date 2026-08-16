@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import { useNavigate } from "react-router-dom";
 import theme from "../theme.js";
 import { formatPKR } from "../utils/format.js";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 // Custom SVG pin icon (avoids the classic leaflet marker-asset bundling issue,
 // and lets the pin match the PiaraPakistan brand colors).
@@ -40,6 +41,7 @@ const RecenterOnChange = ({ center }) => {
  * @param {number} height - px height of the map container
  */
 const MapView = ({ listings = [], userLocation = null, height = 420 }) => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const points = useMemo(
@@ -74,7 +76,7 @@ const MapView = ({ listings = [], userLocation = null, height = 420 }) => {
 
         {userLocation && (
           <Marker position={[userLocation.lat, userLocation.lng]} icon={greenPin}>
-            <Popup>Aap yahan hain</Popup>
+            <Popup>{t("map.youAreHere")}</Popup>
           </Marker>
         )}
 
@@ -90,7 +92,7 @@ const MapView = ({ listings = [], userLocation = null, height = 420 }) => {
                   style={{ padding: "6px 12px", fontSize: 12 }}
                   onClick={() => navigate(`/listing/${p.id}`)}
                 >
-                  Dekhein
+                  {t("map.viewBtn")}
                 </button>
               </div>
             </Popup>

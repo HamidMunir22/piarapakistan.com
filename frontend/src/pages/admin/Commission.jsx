@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { fetchCommission, updateCommission, fetchUsers, updateUserCommission } from "../../api/admin.js";
+import { useLanguage } from "../../context/LanguageContext.jsx";
 
 const Commission = () => {
+  const { t } = useLanguage();
   const [globalType, setGlobalType] = useState("percent");
   const [globalPercent, setGlobalPercent] = useState(10);
   const [globalFixed, setGlobalFixed] = useState(50);
@@ -79,56 +81,54 @@ const Commission = () => {
 
   return (
     <div>
-      <h1 style={{ fontSize: 24 }}>Commission</h1>
+      <h1 style={{ fontSize: 24 }}>{t("admin.nav.commission")}</h1>
       <p style={{ color: "var(--pp-muted)", fontSize: 13.5, marginBottom: 20 }}>
-        Har order par platform ka commission kitna hoga — percentage (%) ya fixed PKR amount, dono
-        tareeqon mein se ek chunein.
+        {t("admin.commissionSubtitle")}
       </p>
 
       <form onSubmit={handleSaveGlobal} className="auth-card" style={{ maxWidth: 420, marginBottom: 30 }}>
-        <div className="section-label">Global Default Commission</div>
+        <div className="section-label">{t("admin.globalCommissionTitle")}</div>
 
         <div className="field">
-          <label>Commission Type</label>
+          <label>{t("admin.commissionTypeLabel")}</label>
           <div style={{ display: "flex", gap: 16, marginTop: 4 }}>
             <label style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
               <input type="radio" checked={globalType === "percent"} onChange={() => setGlobalType("percent")} />
-              Percentage (%)
+              {t("admin.percentOption")}
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
               <input type="radio" checked={globalType === "fixed"} onChange={() => setGlobalType("fixed")} />
-              Fixed Amount (Rs.)
+              {t("admin.fixedAmountOption")}
             </label>
           </div>
         </div>
 
         {globalType === "percent" ? (
           <div className="field">
-            <label>Percentage (%)</label>
+            <label>{t("admin.percentOption")}</label>
             <input type="number" min="0" max="100" step="0.5" value={globalPercent} onChange={(e) => setGlobalPercent(e.target.value)} />
-            <span className="field-hint">Har order ke total amount ka itna % commission katega.</span>
+            <span className="field-hint">{t("admin.percentHint")}</span>
           </div>
         ) : (
           <div className="field">
-            <label>Fixed Amount (Rs.)</label>
+            <label>{t("admin.fixedAmountOption")}</label>
             <input type="number" min="0" step="5" value={globalFixed} onChange={(e) => setGlobalFixed(e.target.value)} />
-            <span className="field-hint">Order chota ho ya bara, har order par ye flat amount commission hogi.</span>
+            <span className="field-hint">{t("admin.fixedHint")}</span>
           </div>
         )}
 
         <p style={{ fontSize: 11.5, color: "var(--pp-muted)", margin: "0 0 14px" }}>
-          Ye har naye order par automatically apply hoga, jab tak kisi seller ka apna override na ho.
+          {t("admin.globalApplyNote")}
         </p>
 
         <button className="btn btn-primary btn-block" disabled={saving}>
-          {saving ? "Save ho raha hai..." : saved ? "Save ho gaya ✓" : "Save Karein"}
+          {saving ? t("admin.saving") : saved ? t("admin.savedCheck") : t("admin.saveBtn")}
         </button>
       </form>
 
-      <div className="section-label" style={{ marginTop: 0 }}>Per-Seller Override</div>
+      <div className="section-label" style={{ marginTop: 0 }}>{t("admin.perSellerOverrideTitle")}</div>
       <p style={{ color: "var(--pp-muted)", fontSize: 13, marginBottom: 12 }}>
-        Kisi khaas seller/shop ka commission baaki sab se alag rakhna ho to yahan set karein
-        ("Default" chunein to wo global setting use karega).
+        {t("admin.perSellerOverrideText")}
       </p>
 
       <form
@@ -139,21 +139,21 @@ const Commission = () => {
         style={{ display: "flex", gap: 10, marginBottom: 14 }}
       >
         <input
-          placeholder="Seller/shop search karein..."
+          placeholder={t("admin.searchSellerPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{ flex: 1, maxWidth: 320, padding: "9px 12px", borderRadius: 10, border: "1.5px solid var(--pp-border)" }}
         />
-        <button type="submit" className="btn btn-secondary">Search</button>
+        <button type="submit" className="btn btn-secondary">{t("search.searchButton")}</button>
       </form>
 
       <table className="dashboard-table">
         <thead>
           <tr>
-            <th>Seller / Shop</th>
-            <th>Category</th>
-            <th>Override</th>
-            <th>Value</th>
+            <th>{t("admin.table.sellerShop")}</th>
+            <th>{t("search.category")}</th>
+            <th>{t("admin.table.override")}</th>
+            <th>{t("admin.table.value")}</th>
           </tr>
         </thead>
         <tbody>
@@ -170,9 +170,9 @@ const Commission = () => {
                     onChange={(e) => handleOverrideTypeChange(s._id, e.target.value)}
                     style={{ padding: "6px 8px", borderRadius: 8, border: "1.5px solid var(--pp-border)" }}
                   >
-                    <option value="default">Default ({globalType === "percent" ? `${globalPercent}%` : `Rs. ${globalFixed}`})</option>
-                    <option value="percent">Percentage (%)</option>
-                    <option value="fixed">Fixed (Rs.)</option>
+                    <option value="default">{t("admin.defaultOption")} ({globalType === "percent" ? `${globalPercent}%` : `Rs. ${globalFixed}`})</option>
+                    <option value="percent">{t("admin.percentOption")}</option>
+                    <option value="fixed">{t("admin.fixedRsOption")}</option>
                   </select>
                 </td>
                 <td>

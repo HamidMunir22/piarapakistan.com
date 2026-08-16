@@ -1,8 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Facebook, Instagram, Youtube, Mail, MapPin } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 const Footer = () => {
+  const { t } = useLanguage();
   const year = new Date().getFullYear();
   return (
     <footer className="site-footer">
@@ -15,7 +17,7 @@ const Footer = () => {
               <span className="brand-green">Pakistan</span>
             </span>
           </div>
-          <p>Pakistan's trusted marketplace for services, shops, and everything in between — verified and secure.</p>
+          <p>{t("footer.tagline")}</p>
           <div className="footer-social">
             <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook">
               <Facebook size={16} />
@@ -30,35 +32,35 @@ const Footer = () => {
         </div>
 
         <div className="footer-col">
-          <h4>Quick Links</h4>
-          <Link to="/">Home</Link>
-          <Link to="/categories">Categories</Link>
-          <Link to="/search">Browse Listings</Link>
-          <Link to="/about">About Us</Link>
+          <h4>{t("footer.quickLinks")}</h4>
+          <Link to="/">{t("nav.home")}</Link>
+          <Link to="/categories">{t("nav.categories")}</Link>
+          <Link to="/search">{t("footer.browseListings")}</Link>
+          <Link to="/about">{t("footer.aboutUs")}</Link>
         </div>
 
         <div className="footer-col">
-          <h4>Support</h4>
-          <Link to="/contact">Contact Us</Link>
-          <Link to="/help">Help Center</Link>
-          <Link to="/terms">Terms & Conditions</Link>
-          <Link to="/privacy">Privacy Policy</Link>
+          <h4>{t("footer.support")}</h4>
+          <Link to="/contact">{t("contact.title")}</Link>
+          <Link to="/help">{t("footer.helpCenter")}</Link>
+          <Link to="/terms">{t("footer.terms")}</Link>
+          <Link to="/privacy">{t("footer.privacy")}</Link>
         </div>
 
         <div className="footer-col">
-          <h4>Get in Touch</h4>
+          <h4>{t("contact.getInTouch")}</h4>
           <span className="footer-contact-line">
             <Mail size={14} /> services@piarapakistan.com
           </span>
           <span className="footer-contact-line">
-            <MapPin size={14} /> Pakistan
+            <MapPin size={14} /> {t("contact.locationValue")}
           </span>
         </div>
       </div>
 
       <div className="footer-bottom">
-        © {year} PiaraPakistan. All rights reserved. &nbsp;|&nbsp; <Link to="/privacy">Privacy Policy</Link> &nbsp;|&nbsp;{" "}
-        <Link to="/terms">Terms &amp; Conditions</Link>
+        © {year} {t("footer.rights")} &nbsp;|&nbsp; <Link to="/privacy">{t("footer.privacy")}</Link> &nbsp;|&nbsp;{" "}
+        <Link to="/terms">{t("footer.terms")}</Link>
       </div>
     </footer>
   );

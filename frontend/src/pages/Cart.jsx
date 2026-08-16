@@ -4,8 +4,10 @@ import { Trash2, Minus, Plus } from "lucide-react";
 import { useCart } from "../context/CartContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { formatPKR, resolveImageUrl } from "../utils/format.js";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 const Cart = () => {
+  const { t } = useLanguage();
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -21,16 +23,16 @@ const Cart = () => {
   if (items.length === 0) {
     return (
       <div className="container" style={{ padding: "60px 20px", textAlign: "center" }}>
-        <h2>Your cart is empty</h2>
-        <p style={{ color: "var(--pp-muted)", marginBottom: 20 }}>Browse some services or products and add them here.</p>
-        <Link to="/search" className="btn btn-primary">Search</Link>
+        <h2>{t("cart.empty")}</h2>
+        <p style={{ color: "var(--pp-muted)", marginBottom: 20 }}>{t("cart.emptyText")}</p>
+        <Link to="/search" className="btn btn-primary">{t("search.searchButton")}</Link>
       </div>
     );
   }
 
   return (
     <div className="container" style={{ padding: "36px 20px 60px", maxWidth: 760 }}>
-      <h1 style={{ fontSize: 26, marginBottom: 24 }}>Your Cart</h1>
+      <h1 style={{ fontSize: 26, marginBottom: 24 }}>{t("cart.title")}</h1>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {items.map((item) => (
@@ -63,10 +65,10 @@ const Cart = () => {
                 </button>
               </div>
             ) : (
-              <span style={{ fontSize: 12, color: "var(--pp-muted)" }}>Booking x{item.quantity}</span>
+              <span style={{ fontSize: 12, color: "var(--pp-muted)" }}>{t("cart.bookingQty")} x{item.quantity}</span>
             )}
 
-            <button className="icon-btn" onClick={() => removeFromCart(item.listingId)} title="Remove">
+            <button className="icon-btn" onClick={() => removeFromCart(item.listingId)} title={t("cart.remove")}>
               <Trash2 size={16} />
             </button>
           </div>
@@ -75,11 +77,11 @@ const Cart = () => {
 
       <div className="auth-card" style={{ marginTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <div style={{ fontSize: 13, color: "var(--pp-muted)" }}>Total</div>
+          <div style={{ fontSize: 13, color: "var(--pp-muted)" }}>{t("cart.total")}</div>
           <div style={{ fontSize: 24, fontWeight: 800, color: "var(--pp-green-dark)" }}>{formatPKR(cartTotal)}</div>
         </div>
         <button className="btn btn-primary" onClick={handleCheckout}>
-          Checkout Karein
+          {t("cart.checkoutBtn")}
         </button>
       </div>
     </div>

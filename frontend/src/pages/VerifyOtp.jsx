@@ -3,14 +3,16 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 const VerifyOtp = () => {
+  const { t } = useLanguage();
   const { state } = useLocation();
   const navigate = useNavigate();
   const { login } = useAuth();
   const phone = state?.phone || "";
   const otpMethod = state?.otpMethod || "email";
-  const methodLabel = otpMethod === "sms" ? "SMS" : "email";
+  const methodLabel = otpMethod === "sms" ? t("auth.methodSms") : t("auth.methodEmail");
 
   const [digits, setDigits] = useState(new Array(6).fill(""));
   const [error, setError] = useState("");
@@ -39,7 +41,7 @@ const VerifyOtp = () => {
     setError("");
     const otp = digits.join("");
     if (otp.length !== 6) {
-      setError("Please enter the full 6-digit code");
+      setError(t("auth.verify.errIncomplete"));
       return;
     }
     setLoading(true);
@@ -48,7 +50,7 @@ const VerifyOtp = () => {
       login(res.data.token, res.data.user);
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Could not verify OTP");
+      setError(err.response?.data?.message || t("auth.verify.errFailedDefault"));
     } finally {
       setLoading(false);
     }
@@ -59,37 +61,35 @@ const VerifyOtp = () => {
     setSuccess("");
     try {
       await api.post("/auth/resend-otp", { phone, otpMethod });
-      setSuccess(`A new code has been sent via ${methodLabel}`);
+      setSuccess(`${t("auth.verify.resentPrefix")} ${methodLabel}`);
     } catch (err) {
-      setError("Could not resend the code");
+      setError(t("auth.verify.errResendFailed"));
     }
   };
 
   return (
     <div className="auth-wrapper">
       <div className="auth-side">
-        <h2>Just one last step</h2>
-        <p>Verify your phone number to keep your account secure.</p>
+        <h2>{t("auth.verify.sideTitle")}</h2>
+        <p>{t("auth.verify.sideText")}</p>
       </div>
       <div className="auth-form-col">
         <div className="auth-card">
           <div className="verify-icon-badge">
             <ShieldCheck size={28} />
           </div>
-          <h1>Verify Your Phone</h1>
+          <h1>{t("auth.verify.title")}</h1>
           <p className="subtitle">
             {phone
-              ? `A code was sent via ${methodLabel}${otpMethod === "sms" ? ` to ${phone}` : ""}`
-              : `Check your ${methodLabel}`}
+              ? `${t("auth.verify.codeSentViaPrefix")} ${methodLabel}${otpMethod === "sms" ? ` ${t("auth.verify.toPrefix")} ${phone}` : ""}`
+              : `${t("auth.verify.checkYourPrefix")} ${methodLabel}`}
           </p>
 
           {error && <div className="alert alert-error">{error}</div>}
           {success && <div className="alert alert-success">{success}</div>}
 
           <div className="account-hold-notice">
-            {otpMethod === "sms"
-              ? "Didn't get an SMS? Check your phone number is correct, or use \"Resend\" below to try again."
-              : "Check your inbox (and spam/junk folder) for the code — it can take a minute to arrive."}
+            {otpMethod === "sms" ? t("auth.verify.smsHint") : t("auth.verify.emailHint")}
           </div>
 
           <form onSubmit={handleVerify}>
@@ -107,14 +107,14 @@ const VerifyOtp = () => {
               ))}
             </div>
             <button className="btn btn-primary btn-block" disabled={loading}>
-              {loading ? "Verifying..." : "Verify"}
+              {loading ? t("auth.verifying") : t("auth.verify.button")}
             </button>
           </form>
 
           <div className="auth-switch">
-            Didn't get the code?{" "}
+            {t("auth.verify.noCode")}{" "}
             <a onClick={handleResend} style={{ cursor: "pointer", color: "var(--pp-orange-dark)", fontWeight: 700 }}>
-              Resend
+              {t("common.resend")}
             </a>
           </div>
         </div>

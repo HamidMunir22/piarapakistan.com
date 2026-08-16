@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchCategories, fetchListingById, createListing, updateListing } from "../../api/listings";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useLanguage } from "../../context/LanguageContext.jsx";
 
 const ListingForm = () => {
+  const { t } = useLanguage();
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -47,7 +49,7 @@ const ListingForm = () => {
     setError("");
 
     if (form.category === "other" && !form.customCategoryName.trim()) {
-      setError("Please type your service/product name for the 'Other' category");
+      setError(t("dash.errCustomCategoryOther"));
       return;
     }
 
@@ -64,7 +66,7 @@ const ListingForm = () => {
       }
       navigate("/dashboard/listings");
     } catch (err) {
-      setError(err.response?.data?.message || "Could not save this listing, please try again");
+      setError(err.response?.data?.message || t("dash.errSaveDefault"));
     } finally {
       setLoading(false);
     }
@@ -75,25 +77,25 @@ const ListingForm = () => {
   return (
     <div className="container" style={{ padding: "36px 20px 60px", maxWidth: 640 }}>
       <h1 style={{ fontSize: 24, marginBottom: 20 }}>
-        {isEdit ? "Edit Listing" : isShop ? "Add New Product" : "Add New Service"}
+        {isEdit ? t("dash.editListingTitle") : isShop ? t("dash.addNewProductTitle") : t("dash.addNewServiceTitle")}
       </h1>
 
       {error && <div className="alert alert-error">{error}</div>}
 
       <form onSubmit={handleSubmit} className="auth-card">
         <div className="field">
-          <label>{isShop ? "Product Name" : "Service Name"}</label>
+          <label>{isShop ? t("dash.productNameLabel") : t("dash.serviceNameLabel")}</label>
           <input name="title" value={form.title} onChange={handleChange} required />
         </div>
         <div className="field">
-          <label>Description</label>
+          <label>{t("dash.descriptionLabel")}</label>
           <textarea name="description" rows={4} value={form.description} onChange={handleChange} required />
         </div>
         <div className="form-grid">
           <div className="field">
-            <label>Category</label>
+            <label>{t("search.category")}</label>
             <select name="category" value={form.category} onChange={handleChange} required>
-              <option value="">Select</option>
+              <option value="">{t("common.select")}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.label}
@@ -102,20 +104,20 @@ const ListingForm = () => {
             </select>
           </div>
           <div className="field">
-            <label>Price Type</label>
+            <label>{t("dash.priceTypeLabel")}</label>
             <select name="priceType" value={form.priceType} onChange={handleChange}>
-              <option value="fixed">Fixed</option>
-              <option value="hourly">Per Hour</option>
-              <option value="starting_at">Starting At</option>
+              <option value="fixed">{t("dash.priceTypeFixed")}</option>
+              <option value="hourly">{t("dash.priceTypeHourly")}</option>
+              <option value="starting_at">{t("dash.priceTypeStartingAt")}</option>
             </select>
           </div>
           <div className="field">
-            <label>Price (PKR)</label>
+            <label>{t("dash.priceLabel")}</label>
             <input type="number" name="price" value={form.price} onChange={handleChange} required min="0" />
           </div>
           {isShop && (
             <div className="field">
-              <label>Stock (quantity)</label>
+              <label>{t("dash.stockLabel")}</label>
               <input type="number" name="stock" value={form.stock} onChange={handleChange} min="0" />
             </div>
           )}
@@ -123,27 +125,25 @@ const ListingForm = () => {
 
         {form.category === "other" && (
           <div className="field">
-            <label>Your Category Name</label>
+            <label>{t("auth.customCategoryLabel")}</label>
             <input
               name="customCategoryName"
-              placeholder="e.g. Pest Control, Event Decoration..."
+              placeholder={t("auth.customCategoryPlaceholder")}
               value={form.customCategoryName}
               onChange={handleChange}
               required
             />
-            <span className="field-hint">
-              Don't see your service/product in the list? Pick "Other" above and type it here.
-            </span>
+            <span className="field-hint">{t("dash.customCategoryHint2")}</span>
           </div>
         )}
 
         <div className="field">
-          <label>Photos (max 5)</label>
+          <label>{t("dash.photosLabel")}</label>
           <input type="file" accept="image/*" multiple onChange={(e) => setImages(Array.from(e.target.files))} />
         </div>
 
         <button className="btn btn-primary btn-block" disabled={loading} style={{ marginTop: 10 }}>
-          {loading ? "Saving..." : isEdit ? "Update Listing" : "Add Listing"}
+          {loading ? t("dash.saving") : isEdit ? t("dash.updateListingBtn") : t("dash.addListingBtn")}
         </button>
       </form>
     </div>

@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { fetchAdminOrders } from "../../api/admin.js";
 import { formatPKR } from "../../utils/format.js";
-
-const STATUS_LABELS = {
-  pending: "Pending",
-  confirmed: "Confirm ho gaya",
-  in_progress: "Jaari hai",
-  completed: "Mukammal",
-  cancelled: "Cancel ho gaya",
-};
+import { useLanguage } from "../../context/LanguageContext.jsx";
 
 const Orders = () => {
+  const { t } = useLanguage();
+
+  const STATUS_LABELS = {
+    pending: t("orders.status.pending"),
+    confirmed: t("orders.status.confirmed"),
+    in_progress: t("orders.status.inProgress"),
+    completed: t("orders.status.completed"),
+    cancelled: t("orders.status.cancelled"),
+  };
+
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
   const [status, setStatus] = useState("");
@@ -28,34 +31,34 @@ const Orders = () => {
 
   return (
     <div>
-      <h1 style={{ fontSize: 24 }}>Orders</h1>
-      <p style={{ color: "var(--pp-muted)", fontSize: 13.5, marginBottom: 16 }}>{total} total orders</p>
+      <h1 style={{ fontSize: 24 }}>{t("nav.orders")}</h1>
+      <p style={{ color: "var(--pp-muted)", fontSize: 13.5, marginBottom: 16 }}>{total} {t("admin.totalOrdersSuffix")}</p>
 
       <select
         value={status}
         onChange={(e) => setStatus(e.target.value)}
         style={{ padding: "9px 12px", borderRadius: 10, border: "1.5px solid var(--pp-border)", marginBottom: 18 }}
       >
-        <option value="">Sab Status</option>
+        <option value="">{t("admin.allStatus")}</option>
         {Object.entries(STATUS_LABELS).map(([k, label]) => (
           <option key={k} value={k}>{label}</option>
         ))}
       </select>
 
       {loading ? (
-        <p>Load ho raha hai...</p>
+        <p>{t("common.loading")}</p>
       ) : (
         <table className="dashboard-table">
           <thead>
             <tr>
-              <th>Order #</th>
-              <th>Item</th>
-              <th>Buyer</th>
-              <th>Seller</th>
-              <th>Total</th>
-              <th>Commission</th>
-              <th>Status</th>
-              <th>Date</th>
+              <th>{t("dash.table.orderNum")}</th>
+              <th>{t("dash.table.item")}</th>
+              <th>{t("dash.table.buyer")}</th>
+              <th>{t("admin.table.seller")}</th>
+              <th>{t("cart.total")}</th>
+              <th>{t("dash.table.commission")}</th>
+              <th>{t("dash.table.status")}</th>
+              <th>{t("admin.table.date")}</th>
             </tr>
           </thead>
           <tbody>
@@ -68,7 +71,7 @@ const Orders = () => {
                 <td>{formatPKR(o.totalAmount)}</td>
                 <td>
                   {formatPKR(o.commissionAmount)}
-                  {o.commissionType === "percent" && o.commissionPercent != null ? ` (${o.commissionPercent}%)` : " (Fixed)"}
+                  {o.commissionType === "percent" && o.commissionPercent != null ? ` (${o.commissionPercent}%)` : ` ${t("dash.fixedLabel")}`}
                 </td>
                 <td>{STATUS_LABELS[o.status]}</td>
                 <td>{new Date(o.createdAt).toLocaleDateString("en-PK")}</td>

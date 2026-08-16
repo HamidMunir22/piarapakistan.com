@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Mail, Phone, KeyRound, Lock } from "lucide-react";
 import api from "../api/client";
 import PasswordStrength, { evaluatePassword } from "../components/PasswordStrength.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 // ---------------------------------------------------------------------------
 // 3-step "Forgot Password" flow:
@@ -12,6 +13,7 @@ import PasswordStrength, { evaluatePassword } from "../components/PasswordStreng
 // Mirrors the Register/Verify OTP flow's look & feel so it feels consistent.
 // ---------------------------------------------------------------------------
 const ForgotPassword = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1 = request code, 2 = enter code + new password
   const [method, setMethod] = useState("email");
@@ -23,22 +25,22 @@ const ForgotPassword = () => {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const methodLabel = method === "sms" ? "SMS" : "email";
+  const methodLabel = method === "sms" ? t("auth.methodSms") : t("auth.methodEmail");
 
   const handleRequestCode = async (e) => {
     e.preventDefault();
     setError("");
     if (!emailOrPhone.trim()) {
-      setError(method === "sms" ? "Please enter your mobile number" : "Please enter your email");
+      setError(method === "sms" ? t("auth.forgot.errEnterMobile") : t("auth.forgot.errEnterEmail"));
       return;
     }
     setLoading(true);
     try {
       await api.post("/auth/forgot-password", { emailOrPhone: emailOrPhone.trim(), method });
-      setSuccess(`If an account matches, a reset code has been sent via ${methodLabel}.`);
+      setSuccess(`${t("auth.forgot.successSentPrefix")} ${methodLabel}.`);
       setStep(2);
     } catch (err) {
-      setError(err.response?.data?.message || "Could not send reset code");
+      setError(err.response?.data?.message || t("auth.forgot.errSendFailed"));
     } finally {
       setLoading(false);
     }
@@ -49,9 +51,9 @@ const ForgotPassword = () => {
     setSuccess("");
     try {
       await api.post("/auth/forgot-password", { emailOrPhone: emailOrPhone.trim(), method });
-      setSuccess(`A new code has been sent via ${methodLabel}`);
+      setSuccess(`${t("auth.verify.resentPrefix")} ${methodLabel}`);
     } catch (err) {
-      setError("Could not resend the code");
+      setError(t("auth.verify.errResendFailed"));
     }
   };
 
@@ -60,17 +62,15 @@ const ForgotPassword = () => {
     setError("");
 
     if (otp.trim().length !== 6) {
-      setError("Please enter the full 6-digit code");
+      setError(t("auth.verify.errIncomplete"));
       return;
     }
     if (!evaluatePassword(newPassword).isStrong) {
-      setError(
-        "Please choose a stronger password — at least 8 characters with uppercase, lowercase, a number, and a special character (@#$%&*)."
-      );
+      setError(t("auth.password.strengthError"));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError("Password and confirm password do not match");
+      setError(t("auth.password.mismatchError"));
       return;
     }
 
@@ -84,7 +84,7 @@ const ForgotPassword = () => {
       });
       navigate("/login", { state: { passwordResetDone: true } });
     } catch (err) {
-      setError(err.response?.data?.message || "Could not reset password");
+      setError(err.response?.data?.message || t("auth.forgot.errResetFailed"));
     } finally {
       setLoading(false);
     }
@@ -93,14 +93,14 @@ const ForgotPassword = () => {
   return (
     <div className="auth-wrapper">
       <div className="auth-side">
-        <h2>Forgot your password?</h2>
-        <p>No worries — we'll send you a code to reset it securely.</p>
+        <h2>{t("auth.forgot.sideTitle")}</h2>
+        <p>{t("auth.forgot.sideText")}</p>
       </div>
       <div className="auth-form-col">
         <div className="auth-card">
-          <h1>Reset Password</h1>
+          <h1>{t("auth.forgot.title")}</h1>
           <p className="subtitle">
-            {step === 1 ? "Choose how you'd like to receive your reset code" : `Enter the code sent via ${methodLabel}`}
+            {step === 1 ? t("auth.forgot.step1Subtitle") : `${t("auth.verify.codeSentViaPrefix")} ${methodLabel}`}
           </p>
 
           {error && <div className="alert alert-error">{error}</div>}
@@ -109,7 +109,7 @@ const ForgotPassword = () => {
           {step === 1 && (
             <form onSubmit={handleRequestCode}>
               <div className="field">
-                <label>Send my reset code via</label>
+                <label>{t("auth.forgot.sendViaLabel")}</label>
                 <div className="otp-method-choice">
                   <button
                     type="button"
@@ -117,7 +117,7 @@ const ForgotPassword = () => {
                     onClick={() => setMethod("email")}
                   >
                     <Mail size={20} />
-                    Email
+                    {t("common.email")}
                   </button>
                   <button
                     type="button"
@@ -125,13 +125,13 @@ const ForgotPassword = () => {
                     onClick={() => setMethod("sms")}
                   >
                     <Phone size={20} />
-                    SMS (mobile number)
+                    {t("auth.forgot.smsMobileOption")}
                   </button>
                 </div>
               </div>
 
               <div className="field">
-                <label>{method === "sms" ? "Mobile Number" : "Email Address"}</label>
+                <label>{method === "sms" ? t("common.mobileNumber") : t("auth.emailAddressLabel")}</label>
                 <div className="input-icon-wrap">
                   {method === "sms" ? <Phone size={16} className="input-icon" /> : <Mail size={16} className="input-icon" />}
                   <input
@@ -145,7 +145,7 @@ const ForgotPassword = () => {
               </div>
 
               <button className="btn btn-primary btn-block" disabled={loading} style={{ marginTop: 10 }}>
-                {loading ? "Sending..." : "Send Reset Code"}
+                {loading ? t("contact.sending") : t("auth.forgot.sendCodeBtn")}
               </button>
             </form>
           )}
@@ -153,7 +153,7 @@ const ForgotPassword = () => {
           {step === 2 && (
             <form onSubmit={handleReset}>
               <div className="field">
-                <label>Reset Code</label>
+                <label>{t("auth.forgot.resetCodeLabel")}</label>
                 <div className="input-icon-wrap">
                   <KeyRound size={16} className="input-icon" />
                   <input
@@ -161,13 +161,13 @@ const ForgotPassword = () => {
                     onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
                     inputMode="numeric"
                     maxLength={6}
-                    placeholder="6-digit code"
+                    placeholder={t("auth.forgot.sixDigitPlaceholder")}
                     required
                   />
                 </div>
               </div>
               <div className="field">
-                <label>New Password</label>
+                <label>{t("auth.newPasswordLabel")}</label>
                 <div className="input-icon-wrap">
                   <Lock size={16} className="input-icon" />
                   <input
@@ -181,7 +181,7 @@ const ForgotPassword = () => {
                 <PasswordStrength password={newPassword} />
               </div>
               <div className="field">
-                <label>Confirm New Password</label>
+                <label>{t("auth.confirmNewPasswordLabel")}</label>
                 <div className="input-icon-wrap">
                   <Lock size={16} className="input-icon" />
                   <input
@@ -194,20 +194,20 @@ const ForgotPassword = () => {
               </div>
 
               <button className="btn btn-primary btn-block" disabled={loading} style={{ marginTop: 10 }}>
-                {loading ? "Resetting..." : "Reset Password"}
+                {loading ? t("auth.forgot.resetting") : t("auth.forgot.title")}
               </button>
 
               <div className="auth-switch">
-                Didn't get the code?{" "}
+                {t("auth.verify.noCode")}{" "}
                 <a onClick={handleResend} style={{ cursor: "pointer", color: "var(--pp-orange-dark)", fontWeight: 700 }}>
-                  Resend
+                  {t("common.resend")}
                 </a>
               </div>
             </form>
           )}
 
           <div className="auth-switch">
-            Remembered your password? <Link to="/login">Login</Link>
+            {t("auth.forgot.rememberedPassword")} <Link to="/login">{t("nav.login")}</Link>
           </div>
         </div>
       </div>

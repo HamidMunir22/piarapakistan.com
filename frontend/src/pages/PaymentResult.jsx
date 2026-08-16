@@ -1,17 +1,20 @@
 import React from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
-
-const STATUS_CONFIG = {
-  paid: { icon: CheckCircle2, color: "var(--pp-green-dark)", title: "Payment Successful!", msg: "Aapka payment mukammal ho gaya. Order confirm ho chuka hai." },
-  failed: { icon: XCircle, color: "var(--pp-danger)", title: "Payment Failed", msg: "Payment mukammal nahi ho saka. Aap dobara koshish kar sakte hain ya Cash on Delivery choose karein." },
-  invalid: { icon: AlertTriangle, color: "var(--pp-danger)", title: "Something Went Wrong", msg: "Ye payment verify nahi ho saka. Agar paisay kat gaye hain to Help Center se rabta karein." },
-  error: { icon: AlertTriangle, color: "var(--pp-danger)", title: "Error", msg: "Ek masla pesh aya. Apne order ka status 'My Orders' mein check karein." },
-};
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 const PaymentResult = () => {
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status") || "error";
+
+  const STATUS_CONFIG = {
+    paid: { icon: CheckCircle2, color: "var(--pp-green-dark)", title: t("paymentResult.paidTitle"), msg: t("paymentResult.paidMsg") },
+    failed: { icon: XCircle, color: "var(--pp-danger)", title: t("paymentResult.failedTitle"), msg: t("paymentResult.failedMsg") },
+    invalid: { icon: AlertTriangle, color: "var(--pp-danger)", title: t("paymentResult.invalidTitle"), msg: t("paymentResult.invalidMsg") },
+    error: { icon: AlertTriangle, color: "var(--pp-danger)", title: t("paymentResult.errorTitle"), msg: t("paymentResult.errorMsg") },
+  };
+
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.error;
   const Icon = config.icon;
 
@@ -22,7 +25,7 @@ const PaymentResult = () => {
         <h2 style={{ marginBottom: 8 }}>{config.title}</h2>
         <p style={{ color: "var(--pp-muted)", fontSize: 13.5, marginBottom: 22 }}>{config.msg}</p>
         <Link to="/orders" className="btn btn-primary btn-block">
-          Mere Orders Dekhein
+          {t("paymentResult.viewOrdersBtn")}
         </Link>
       </div>
     </div>

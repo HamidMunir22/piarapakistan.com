@@ -6,12 +6,7 @@ import { fetchCategories } from "../api/listings";
 import { fetchBanks } from "../api/admin.js";
 import ReCaptcha from "../components/ReCaptcha.jsx";
 import PasswordStrength, { evaluatePassword } from "../components/PasswordStrength.jsx";
-
-const ROLES = [
-  { key: "buyer", label: "Buyer", Icon: ShoppingBag, desc: "Browse & book services or shop products" },
-  { key: "seller", label: "Service Seller", Icon: Wrench, desc: "Offer your skills — plumber, electrician, tutor..." },
-  { key: "shop", label: "Shop Owner", Icon: Store, desc: "Sell products from your own shop online" },
-];
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 const initialState = {
   role: "",
@@ -35,6 +30,14 @@ const initialState = {
 };
 
 const Register = () => {
+  const { t } = useLanguage();
+
+  const ROLES = [
+    { key: "buyer", label: t("auth.role.buyer"), Icon: ShoppingBag, desc: t("auth.role.buyerDesc") },
+    { key: "seller", label: t("auth.role.seller"), Icon: Wrench, desc: t("auth.role.sellerDesc") },
+    { key: "shop", label: t("auth.role.shop"), Icon: Store, desc: t("auth.role.shopDesc") },
+  ];
+
   const [form, setForm] = useState(initialState);
   const [files, setFiles] = useState({
     idCardFrontImage: null,
@@ -67,7 +70,7 @@ const Register = () => {
 
   const detectLocation = () => {
     if (!navigator.geolocation) {
-      setError("Your browser can't detect location");
+      setError(t("auth.register.errLocationUnsupported"));
       return;
     }
     setLocating(true);
@@ -78,7 +81,7 @@ const Register = () => {
       },
       () => {
         setLocating(false);
-        setError("Couldn't get your location. Please allow location access in your browser settings.");
+        setError(t("auth.register.errLocationDenied"));
       }
     );
   };
@@ -103,38 +106,36 @@ const Register = () => {
     setError("");
 
     if (!form.role) {
-      setError("Please choose Buyer, Service Seller, or Shop Owner to continue");
+      setError(t("auth.register.errRole"));
       return;
     }
 
     if (!otpMethod) {
-      setError("Please choose whether to receive your verification code via Email or Mobile Number");
+      setError(t("auth.register.errOtpMethod"));
       return;
     }
 
     if (!evaluatePassword(form.password).isStrong) {
-      setError(
-        "Please choose a stronger password — at least 8 characters with uppercase, lowercase, a number, and a special character (@#$%&*)."
-      );
+      setError(t("auth.password.strengthError"));
       return;
     }
 
     if (form.password !== form.confirmPassword) {
-      setError("Password and confirm password do not match");
+      setError(t("auth.password.mismatchError"));
       return;
     }
 
     if (isSellerOrShop) {
       if (!termsAccepted) {
-        setError("Please accept the Terms & Conditions to continue");
+        setError(t("auth.register.errTerms"));
         return;
       }
       if (!files.idCardFrontImage || !files.idCardBackImage || !files.idCardSelfieImage) {
-        setError("ID card (front + back) and a selfie holding your ID card are required for sellers/shops");
+        setError(t("auth.register.errIdDocs"));
         return;
       }
       if (form.category === "other" && !form.customCategoryName.trim()) {
-        setError("Please type your service/product category");
+        setError(t("auth.register.errCustomCategory"));
         return;
       }
     }
@@ -162,7 +163,7 @@ const Register = () => {
 
       navigate("/verify-otp", { state: { phone: res.data.phone, otpMethod } });
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed, please try again");
+      setError(err.response?.data?.message || t("auth.register.errDefault"));
     } finally {
       setLoading(false);
     }
@@ -171,22 +172,19 @@ const Register = () => {
   return (
     <div className="auth-wrapper">
       <div className="auth-side">
-        <h2>Bring your services or shop to millions of people.</h2>
-        <p>
-          Register on PiaraPakistan — buyer or seller — every account is verified so the platform stays safe for
-          everyone.
-        </p>
+        <h2>{t("auth.register.sideTitle")}</h2>
+        <p>{t("auth.register.sideText")}</p>
         <ul className="auth-side-features">
-          <li>✓ Verified buyers &amp; sellers</li>
-          <li>✓ Secure JazzCash / Easypaisa / Bank payouts</li>
-          <li>✓ Nationwide — every city in Pakistan</li>
+          <li>✓ {t("auth.register.feature1")}</li>
+          <li>✓ {t("auth.register.feature2")}</li>
+          <li>✓ {t("auth.register.feature3")}</li>
         </ul>
       </div>
 
       <div className="auth-form-col">
         <div className="auth-card">
-          <h1>Create Account</h1>
-          <p className="subtitle">Just 2 minutes — secure and simple</p>
+          <h1>{t("auth.register.title")}</h1>
+          <p className="subtitle">{t("auth.register.subtitle")}</p>
 
           {error && <div className="alert alert-error">{error}</div>}
 
@@ -216,13 +214,13 @@ const Register = () => {
                   );
                 })()}
                 <button type="button" className="chosen-pill-change" onClick={() => handleRoleChange("")}>
-                  Change
+                  {t("common.change")}
                 </button>
               </div>
 
               {!otpMethod ? (
                 <div className="field register-via-field">
-                  <label>Register with</label>
+                  <label>{t("auth.register.registerWithLabel")}</label>
                   <div className="otp-method-choice">
                     <button
                       type="button"
@@ -230,8 +228,8 @@ const Register = () => {
                       onClick={() => setOtpMethod("email")}
                     >
                       <Mail size={20} />
-                      Email
-                      <span className="otp-method-sub">Code sent to your email</span>
+                      {t("common.email")}
+                      <span className="otp-method-sub">{t("auth.register.codeToEmail")}</span>
                     </button>
                     <button
                       type="button"
@@ -239,56 +237,55 @@ const Register = () => {
                       onClick={() => setOtpMethod("sms")}
                     >
                       <Phone size={20} />
-                      Mobile Number
-                      <span className="otp-method-sub">Code sent via SMS to your SIM</span>
+                      {t("common.mobileNumber")}
+                      <span className="otp-method-sub">{t("auth.register.codeToSms")}</span>
                     </button>
                   </div>
-                  <span className="field-hint">
-                    Both email and phone number are still needed below — this only decides where your verification
-                    code is delivered.
-                  </span>
+                  <span className="field-hint">{t("auth.register.otpMethodHint")}</span>
                 </div>
               ) : (
                 <div className="chosen-pill">
                   {otpMethod === "email" ? <Mail size={16} /> : <Phone size={16} />}
-                  <span>Register with {otpMethod === "email" ? "Email" : "Mobile Number"}</span>
+                  <span>
+                    {t("auth.register.registerWithPrefix")} {otpMethod === "email" ? t("common.email") : t("common.mobileNumber")}
+                  </span>
                   <button type="button" className="chosen-pill-change" onClick={() => setOtpMethod(null)}>
-                    Change
+                    {t("common.change")}
                   </button>
                 </div>
               )}
 
           <form onSubmit={handleSubmit}>
-            <div className="section-label">Basic Information</div>
+            <div className="section-label">{t("auth.register.sectionBasic")}</div>
             <div className="form-grid">
               <div className="field">
-                <label>First Name</label>
+                <label>{t("auth.firstName")}</label>
                 <div className="input-icon-wrap">
                   <User size={16} className="input-icon" />
                   <input name="firstName" value={form.firstName} onChange={handleChange} required />
                 </div>
               </div>
               <div className="field">
-                <label>Last Name</label>
+                <label>{t("auth.lastName")}</label>
                 <div className="input-icon-wrap">
                   <User size={16} className="input-icon" />
                   <input name="lastName" value={form.lastName} onChange={handleChange} required />
                 </div>
               </div>
               <div className="field">
-                <label>Gender</label>
+                <label>{t("auth.genderLabel")}</label>
                 <div className="input-icon-wrap">
                   <Users size={16} className="input-icon" />
                   <select name="gender" value={form.gender} onChange={handleChange} required>
-                    <option value="">Select gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
+                    <option value="">{t("auth.selectGender")}</option>
+                    <option value="male">{t("auth.genderMale")}</option>
+                    <option value="female">{t("auth.genderFemale")}</option>
+                    <option value="other">{t("auth.genderOther")}</option>
                   </select>
                 </div>
               </div>
               <div className="field">
-                <label>Email {otpMethod === "email" && <span className="req-badge">code sent here</span>}</label>
+                <label>{t("common.email")} {otpMethod === "email" && <span className="req-badge">{t("auth.register.codeSentHereBadge")}</span>}</label>
                 <div className="input-icon-wrap">
                   <Mail size={16} className="input-icon" />
                   <input type="email" name="email" value={form.email} onChange={handleChange} required />
@@ -296,7 +293,7 @@ const Register = () => {
               </div>
               <div className="field">
                 <label>
-                  Phone Number {otpMethod === "sms" && <span className="req-badge">code sent here</span>}
+                  {t("auth.phoneNumberLabel")} {otpMethod === "sms" && <span className="req-badge">{t("auth.register.codeSentHereBadge")}</span>}
                 </label>
                 <div className="input-icon-wrap">
                   <Phone size={16} className="input-icon" />
@@ -310,7 +307,7 @@ const Register = () => {
                 </div>
               </div>
               <div className="field">
-                <label>Password</label>
+                <label>{t("auth.passwordLabel")}</label>
                 <div className="input-icon-wrap">
                   <Lock size={16} className="input-icon" />
                   <input type="password" name="password" value={form.password} onChange={handleChange} required minLength={8} />
@@ -318,7 +315,7 @@ const Register = () => {
                 <PasswordStrength password={form.password} />
               </div>
               <div className="field">
-                <label>Confirm Password</label>
+                <label>{t("auth.confirmPasswordLabel")}</label>
                 <div className="input-icon-wrap">
                   <Lock size={16} className="input-icon" />
                   <input
@@ -331,9 +328,9 @@ const Register = () => {
                 </div>
               </div>
               <div className="field full">
-                <label>Profile Picture {!isSellerOrShop && "(optional)"}</label>
+                <label>{t("auth.profilePictureLabel")} {!isSellerOrShop && t("common.optional")}</label>
                 <label className={`file-upload-box ${files.profilePicture ? "has-file" : ""}`} htmlFor="profilePic">
-                  {files.profilePicture ? files.profilePicture.name : "Click to upload"}
+                  {files.profilePicture ? files.profilePicture.name : t("common.clickToUpload")}
                 </label>
                 <input
                   id="profilePic"
@@ -346,44 +343,41 @@ const Register = () => {
               </div>
             </div>
 
-            <div className="section-label">Address / Location</div>
+            <div className="section-label">{t("auth.register.sectionAddress")}</div>
             <div className="form-grid">
               <div className="field full">
-                <label>Full Address</label>
+                <label>{t("auth.fullAddress")}</label>
                 <input name="address" value={form.address} onChange={handleChange} required />
               </div>
               <div className="field">
-                <label>City</label>
+                <label>{t("search.city")}</label>
                 <input name="city" value={form.city} onChange={handleChange} required />
               </div>
               <div className="field">
-                <label>Area / Sector</label>
-                <input name="area" placeholder="e.g. G-11, Bahria Town" value={form.area} onChange={handleChange} />
+                <label>{t("auth.areaSector")}</label>
+                <input name="area" placeholder={t("auth.areaSectorPlaceholder")} value={form.area} onChange={handleChange} />
               </div>
               <div className="field full">
                 <button type="button" className="btn btn-secondary" onClick={detectLocation} disabled={locating}>
                   <MapPin size={15} />
-                  {locating ? "Detecting location..." : coords ? "Location set ✓" : "Set your location on the map"}
+                  {locating ? t("auth.detectingLocation") : coords ? t("auth.locationSet") : t("auth.setLocationBtn")}
                 </button>
-                <span className="field-hint">
-                  This is used to show your listing on the map and in nearby search results — the closer you are,
-                  the higher you appear for buyers.
-                </span>
+                <span className="field-hint">{t("auth.register.locationHint")}</span>
               </div>
             </div>
 
             {isSellerOrShop && (
               <>
-                <div className="section-label">{form.role === "shop" ? "Shop Details" : "Service Details"}</div>
+                <div className="section-label">{form.role === "shop" ? t("auth.register.sectionShopDetails") : t("auth.register.sectionServiceDetails")}</div>
                 <div className="form-grid">
                   <div className="field full">
-                    <label>{form.role === "shop" ? "Shop Name" : "Business / Service Name"}</label>
+                    <label>{form.role === "shop" ? t("auth.shopNameLabel") : t("auth.businessNameLabel")}</label>
                     <input name="businessName" value={form.businessName} onChange={handleChange} required />
                   </div>
                   <div className="field full">
-                    <label>Category</label>
+                    <label>{t("search.category")}</label>
                     <select name="category" value={form.category} onChange={handleChange} required>
-                      <option value="">Select a category</option>
+                      <option value="">{t("auth.selectCategory")}</option>
                       {categories.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.label}
@@ -393,21 +387,19 @@ const Register = () => {
                   </div>
                   {form.category === "other" && (
                     <div className="field full">
-                      <label>Your Category Name</label>
+                      <label>{t("auth.customCategoryLabel")}</label>
                       <input
                         name="customCategoryName"
-                        placeholder="e.g. Pest Control, Event Decoration..."
+                        placeholder={t("auth.customCategoryPlaceholder")}
                         value={form.customCategoryName}
                         onChange={handleChange}
                         required
                       />
-                      <span className="field-hint">
-                        Don't see your service/product above? Type it here instead.
-                      </span>
+                      <span className="field-hint">{t("auth.customCategoryHint")}</span>
                     </div>
                   )}
                   <div className="field full">
-                    <label>CNIC Number</label>
+                    <label>{t("auth.cnicLabel")}</label>
                     <input
                       name="cnicNumber"
                       placeholder="XXXXX-XXXXXXX-X"
@@ -415,20 +407,20 @@ const Register = () => {
                       onChange={handleChange}
                       required
                     />
-                    <span className="field-hint">Required for seller/shop verification (fraud prevention).</span>
+                    <span className="field-hint">{t("auth.cnicHint")}</span>
                   </div>
                 </div>
 
-                <div className="section-label">Payout Details</div>
+                <div className="section-label">{t("auth.register.sectionPayout")}</div>
                 <div className="form-grid">
                   <div className="field">
-                    <label>Account Title</label>
+                    <label>{t("auth.accountTitleLabel")}</label>
                     <input name="bankAccountTitle" value={form.bankAccountTitle} onChange={handleChange} />
                   </div>
                   <div className="field">
-                    <label>Bank / Wallet</label>
+                    <label>{t("auth.bankWalletLabel")}</label>
                     <select name="bankName" value={form.bankName} onChange={handleChange}>
-                      <option value="">Select</option>
+                      <option value="">{t("common.select")}</option>
                       {banks.map((b) => (
                         <option key={b} value={b}>
                           {b}
@@ -437,7 +429,7 @@ const Register = () => {
                     </select>
                   </div>
                   <div className="field full">
-                    <label>Account / IBAN Number</label>
+                    <label>{t("auth.ibanLabel")}</label>
                     <input name="bankAccountNumber" value={form.bankAccountNumber} onChange={handleChange} />
                   </div>
                 </div>
@@ -450,20 +442,19 @@ const Register = () => {
                     onChange={(e) => setTermsAccepted(e.target.checked)}
                   />
                   <label htmlFor="tcAccept">
-                    I agree to the <Link to="/terms" target="_blank">Terms &amp; Conditions</Link> and{" "}
-                    <Link to="/privacy" target="_blank">Privacy Policy</Link>, and I understand my account will be
-                    reviewed (usually within 24 hours) before I can list services/products.
+                    {t("auth.register.tcPre")} <Link to="/terms" target="_blank">{t("footer.terms")}</Link> {t("auth.register.tcAnd")}{" "}
+                    <Link to="/privacy" target="_blank">{t("footer.privacy")}</Link>{t("auth.register.tcPost")}
                   </label>
                 </div>
 
                 {termsAccepted && (
                   <>
-                    <div className="section-label">Identity Verification</div>
+                    <div className="section-label">{t("auth.register.sectionIdentity")}</div>
                     <div className="form-grid">
                       <div className="field">
-                        <label>ID Card - Front</label>
+                        <label>{t("auth.idCardFront")}</label>
                         <label className={`file-upload-box ${files.idCardFrontImage ? "has-file" : ""}`} htmlFor="idFront">
-                          {files.idCardFrontImage ? files.idCardFrontImage.name : "Click to upload (jpg/png)"}
+                          {files.idCardFrontImage ? files.idCardFrontImage.name : t("auth.clickToUploadImage")}
                         </label>
                         <input
                           id="idFront"
@@ -476,9 +467,9 @@ const Register = () => {
                         />
                       </div>
                       <div className="field">
-                        <label>ID Card - Back</label>
+                        <label>{t("auth.idCardBack")}</label>
                         <label className={`file-upload-box ${files.idCardBackImage ? "has-file" : ""}`} htmlFor="idBack">
-                          {files.idCardBackImage ? files.idCardBackImage.name : "Click to upload (jpg/png)"}
+                          {files.idCardBackImage ? files.idCardBackImage.name : t("auth.clickToUploadImage")}
                         </label>
                         <input
                           id="idBack"
@@ -491,12 +482,12 @@ const Register = () => {
                         />
                       </div>
                       <div className="field full">
-                        <label>Selfie Holding Your ID Card</label>
+                        <label>{t("auth.selfieLabel")}</label>
                         <label
                           className={`file-upload-box ${files.idCardSelfieImage ? "has-file" : ""}`}
                           htmlFor="idSelfie"
                         >
-                          {files.idCardSelfieImage ? files.idCardSelfieImage.name : "Click to upload — take a photo of yourself holding your ID card"}
+                          {files.idCardSelfieImage ? files.idCardSelfieImage.name : t("auth.selfieUploadPrompt")}
                         </label>
                         <input
                           id="idSelfie"
@@ -507,9 +498,7 @@ const Register = () => {
                           style={{ display: "none" }}
                           required
                         />
-                        <span className="field-hint">
-                          Hold your ID card next to your face and take a clear selfie — this confirms it's really you.
-                        </span>
+                        <span className="field-hint">{t("auth.selfieHint")}</span>
                       </div>
                     </div>
                   </>
@@ -520,14 +509,14 @@ const Register = () => {
             <ReCaptcha onChange={setRecaptchaToken} />
 
             <button className="btn btn-primary btn-block" type="submit" disabled={loading} style={{ marginTop: 10 }}>
-              {loading ? "Registering..." : "Register"}
+              {loading ? t("auth.registering") : t("nav.register")}
             </button>
           </form>
             </>
           )}
 
           <div className="auth-switch">
-            Already have an account? <Link to="/login">Login</Link>
+            {t("auth.register.haveAccount")} <Link to="/login">{t("nav.login")}</Link>
           </div>
         </div>
       </div>

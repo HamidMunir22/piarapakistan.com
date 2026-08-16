@@ -4,8 +4,10 @@ import { User, Lock } from "lucide-react";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext.jsx";
 import ReCaptcha from "../components/ReCaptcha.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 const Login = () => {
+  const { t } = useLanguage();
   const [form, setForm] = useState({ emailOrPhone: "", password: "" });
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [error, setError] = useState("");
@@ -27,7 +29,7 @@ const Login = () => {
         return;
       }
       // 423 = temporarily locked (brute-force protection), 401 = wrong credentials
-      setError(err.response?.data?.message || "Login failed, please try again");
+      setError(err.response?.data?.message || t("auth.login.failedDefault"));
     } finally {
       setLoading(false);
     }
@@ -36,19 +38,19 @@ const Login = () => {
   return (
     <div className="auth-wrapper">
       <div className="auth-side">
-        <h2>Welcome back</h2>
-        <p>Login to see your services, orders, and dashboard.</p>
+        <h2>{t("auth.login.welcomeBack")}</h2>
+        <p>{t("auth.login.sideText")}</p>
       </div>
       <div className="auth-form-col">
         <div className="auth-card">
-          <h1>Login</h1>
-          <p className="subtitle">Access your account</p>
+          <h1>{t("nav.login")}</h1>
+          <p className="subtitle">{t("auth.login.subtitle")}</p>
 
           {error && <div className="alert alert-error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="field">
-              <label>Email or Phone Number</label>
+              <label>{t("auth.emailOrPhone")}</label>
               <div className="input-icon-wrap">
                 <User size={16} className="input-icon" />
                 <input
@@ -59,7 +61,7 @@ const Login = () => {
               </div>
             </div>
             <div className="field">
-              <label>Password</label>
+              <label>{t("auth.passwordLabel")}</label>
               <div className="input-icon-wrap">
                 <Lock size={16} className="input-icon" />
                 <input
@@ -70,19 +72,19 @@ const Login = () => {
                 />
               </div>
               <div className="forgot-password-link">
-                <Link to="/forgot-password">Forgot password?</Link>
+                <Link to="/forgot-password">{t("auth.forgotPasswordLink")}</Link>
               </div>
             </div>
 
             <ReCaptcha onChange={setRecaptchaToken} />
 
             <button className="btn btn-primary btn-block" disabled={loading} style={{ marginTop: 10 }}>
-              {loading ? "Logging in..." : "Login"}
+              {loading ? t("auth.login.loggingIn") : t("nav.login")}
             </button>
           </form>
 
           <div className="auth-switch">
-            Don't have an account? <Link to="/register">Register</Link>
+            {t("auth.login.noAccount")} <Link to="/register">{t("nav.register")}</Link>
           </div>
         </div>
       </div>

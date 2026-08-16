@@ -11,6 +11,11 @@ const STORAGE_KEY = "pp_language";
 export const LANGUAGES = [
   { code: "en", label: "English" },
   { code: "ur", label: "اردو (Urdu)" },
+  { code: "pa", label: "پنجابی (Punjabi)" },
+  { code: "ps", label: "پښتو (Pashto)" },
+  { code: "sd", label: "سنڌي (Sindhi)" },
+  { code: "skr", label: "سرائیکی (Saraiki)" },
+  { code: "bal", label: "بلوچی (Balochi)" },
 ];
 
 export const LanguageProvider = ({ children }) => {

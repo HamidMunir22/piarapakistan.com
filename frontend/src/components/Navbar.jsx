@@ -97,7 +97,7 @@ const Navbar = () => {
           onChange={(e) => setQ(e.target.value)}
           placeholder={t("nav.searchPlaceholder")}
         />
-        <button type="submit" className="icon-btn" aria-label="Search">
+        <button type="submit" className="icon-btn" aria-label={t("nav.searchAriaLabel")}>
           <SearchIcon size={18} />
         </button>
       </form>
@@ -157,7 +157,7 @@ const Navbar = () => {
         </Link>
         <button
           className="icon-btn navbar-hamburger"
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-label={mobileOpen ? t("nav.closeMenu") : t("nav.openMenu")}
           onClick={() => setMobileOpen((o) => !o)}
         >
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -173,7 +173,7 @@ const Navbar = () => {
               onChange={(e) => setQ(e.target.value)}
               placeholder={t("nav.searchPlaceholder")}
             />
-            <button type="submit" className="icon-btn" aria-label="Search">
+            <button type="submit" className="icon-btn" aria-label={t("nav.searchAriaLabel")}>
               <SearchIcon size={18} />
             </button>
           </form>
@@ -199,7 +199,7 @@ const Navbar = () => {
           <NavLink to="/contact" className={navLinkClass} onClick={closeMobile}>{t("nav.contact")}</NavLink>
           <NavLink to="/help" className={navLinkClass} onClick={closeMobile}>{t("nav.help")}</NavLink>
 
-          <div className="navbar-mobile-lang-label">Language</div>
+          <div className="navbar-mobile-lang-label">{t("nav.languageLabel")}</div>
           <div className="navbar-mobile-lang-options">
             {LANGUAGES.map((l) => (
               <MobileLangOption key={l.code} lang={l} />

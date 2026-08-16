@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 // ---------------------------------------------------------------------------
 // Shared password rule + strength meter, used on Register and Reset Password.
@@ -26,9 +27,9 @@ export const evaluatePassword = (password = "") => {
   return { rules, passed, level, isStrong: level === "strong" };
 };
 
-const LABELS = { empty: "", weak: "Weak", medium: "Medium", strong: "Strong" };
-
 const PasswordStrength = ({ password }) => {
+  const { t } = useLanguage();
+  const LABELS = { empty: "", weak: t("auth.password.weak"), medium: t("auth.password.medium"), strong: t("auth.password.strong") };
   const { rules, level } = evaluatePassword(password);
   if (!password) return null;
 
@@ -41,7 +42,7 @@ const PasswordStrength = ({ password }) => {
         <span className={`pw-strength-label pw-strength-label-${level}`}>{LABELS[level]}</span>
         <span className="pw-strength-rules">
           {[
-            ["8+ chars", rules.length],
+            [t("auth.password.charsHint"), rules.length],
             ["A-Z", rules.upper],
             ["a-z", rules.lower],
             ["0-9", rules.number],

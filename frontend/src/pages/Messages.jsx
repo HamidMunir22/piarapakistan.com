@@ -103,7 +103,7 @@ const Messages = () => {
             </div>
             <div>
               <div style={{ fontWeight: 700, fontSize: 13.5 }}>{t("chat.assistant")}</div>
-              <div style={{ fontSize: 11.5, color: "var(--pp-muted)" }}>Quick Help</div>
+              <div style={{ fontSize: 11.5, color: "var(--pp-muted)" }}>{t("chat.quickHelp")}</div>
             </div>
           </div>
 
