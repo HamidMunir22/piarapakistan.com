@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { fetchUsers, suspendUser, unsuspendUser } from "../../api/admin.js";
-import { Ban, CheckCircle2 } from "lucide-react";
+import { Ban, CheckCircle2, FileSpreadsheet, FileText } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext.jsx";
+import { formatDate } from "../../utils/format.js";
+import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 
 const Users = () => {
   const { t } = useLanguage();
@@ -11,6 +13,7 @@ const Users = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
+  const [exporting, setExporting] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -20,6 +23,59 @@ const Users = () => {
         setTotal(data.total);
       })
       .finally(() => setLoading(false));
+  };
+
+  // Export always re-fetches EVERY matching user (not just the current page
+  // of 50) so the file reflects the full filtered list, then hands it to the
+  // shared export helper. The backend's /admin/users endpoint has no hard
+  // limit cap, so a very high limit here effectively means "all of them".
+  const exportColumns = [
+    { header: t("admin.table.name"), key: "name" },
+    { header: t("admin.table.role"), key: "role" },
+    { header: t("admin.emailLabel"), key: "email" },
+    { header: t("admin.emailVerified"), key: "emailVerified" },
+    { header: t("admin.phoneLabel"), key: "phone" },
+    { header: t("admin.phoneVerified"), key: "phoneVerified" },
+    { header: t("search.city"), key: "city" },
+    { header: t("admin.table.kyc"), key: "kyc" },
+    { header: t("dash.table.status"), key: "status" },
+    { header: t("admin.joinedLabel"), key: "joined" },
+  ];
+
+  const buildExportRows = async () => {
+    const data = await fetchUsers({ role: role || undefined, search: search || undefined, limit: 100000 });
+    return data.users.map((u) => ({
+      name: `${u.firstName} ${u.lastName}${u.businessName ? ` (${u.businessName})` : ""}`,
+      role: u.role,
+      email: u.email,
+      emailVerified: u.isEmailVerified ? "Yes" : "No",
+      phone: u.phone,
+      phoneVerified: u.isPhoneVerified ? "Yes" : "No",
+      city: u.city,
+      kyc: ["seller", "shop"].includes(u.role) ? u.kycStatus : "—",
+      status: u.isSuspended ? t("admin.suspended") : t("dash.active"),
+      joined: formatDate(u.createdAt),
+    }));
+  };
+
+  const handleExportExcel = async () => {
+    setExporting(true);
+    try {
+      const rows = await buildExportRows();
+      exportToExcel(rows, exportColumns, "piarapakistan-users");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    setExporting(true);
+    try {
+      const rows = await buildExportRows();
+      exportToPDF(rows, exportColumns, "piarapakistan-users", t("admin.nav.users"));
+    } finally {
+      setExporting(false);
+    }
   };
 
   useEffect(() => {
@@ -59,7 +115,7 @@ const Users = () => {
       <h1 style={{ fontSize: 24 }}>{t("admin.nav.users")}</h1>
       <p style={{ color: "var(--pp-muted)", fontSize: 13.5, marginBottom: 16 }}>{total} {t("admin.totalUsersSuffix")}</p>
 
-      <form onSubmit={handleSearchSubmit} style={{ display: "flex", gap: 10, marginBottom: 18, flexWrap: "wrap" }}>
+      <form onSubmit={handleSearchSubmit} style={{ display: "flex", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
         <input
           placeholder={t("admin.searchNamePlaceholder")}
           value={search}
@@ -75,6 +131,15 @@ const Users = () => {
         <button type="submit" className="btn btn-primary">{t("search.searchButton")}</button>
       </form>
 
+      <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
+        <button className="btn btn-secondary" type="button" disabled={exporting} onClick={handleExportExcel}>
+          <FileSpreadsheet size={15} /> {t("admin.exportExcel")}
+        </button>
+        <button className="btn btn-secondary" type="button" disabled={exporting} onClick={handleExportPDF}>
+          <FileText size={15} /> {t("admin.exportPDF")}
+        </button>
+      </div>
+
       {loading ? (
         <p>{t("common.loading")}</p>
       ) : (
@@ -85,6 +150,7 @@ const Users = () => {
               <th>{t("admin.table.role")}</th>
               <th>{t("admin.table.contact")}</th>
               <th>{t("search.city")}</th>
+              <th>{t("admin.joinedLabel")}</th>
               <th>{t("admin.table.kyc")}</th>
               <th>{t("dash.table.status")}</th>
               <th>{t("admin.table.action")}</th>
@@ -96,10 +162,21 @@ const Users = () => {
                 <td>{u.firstName} {u.lastName}{u.businessName ? ` (${u.businessName})` : ""}</td>
                 <td>{u.role}</td>
                 <td>
-                  <div>{u.email}</div>
-                  <div style={{ fontSize: 11, color: "var(--pp-muted)" }}>{u.phone}</div>
+                  <div>
+                    {u.email}{" "}
+                    {u.isEmailVerified && (
+                      <CheckCircle2 size={12} style={{ color: "var(--pp-green-dark)", verticalAlign: "middle" }} aria-label={t("admin.emailVerified")} />
+                    )}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--pp-muted)" }}>
+                    {u.phone}{" "}
+                    {u.isPhoneVerified && (
+                      <CheckCircle2 size={11} style={{ color: "var(--pp-green-dark)", verticalAlign: "middle" }} aria-label={t("admin.phoneVerified")} />
+                    )}
+                  </div>
                 </td>
                 <td>{u.city}</td>
+                <td>{formatDate(u.createdAt)}</td>
                 <td>
                   {["seller", "shop"].includes(u.role) ? (
                     <span className={`status-pill ${u.kycStatus === "approved" ? "active" : "paused"}`}>

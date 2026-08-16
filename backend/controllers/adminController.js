@@ -137,6 +137,14 @@ const updateUserCommission = async (req, res) => {
 // GET /api/admin/stats - dashboard overview numbers
 // ---------------------------------------------------------------------------
 const getStats = async (req, res) => {
+  // "Today" and "this week" are computed in server time (UTC) — good enough
+  // for a rough at-a-glance count; not meant to be a precise per-timezone
+  // report (the Recent Registrations list below shows exact timestamps).
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfWeek.getDate() - 7);
+
   const [
     totalUsers,
     totalBuyers,
@@ -148,6 +156,9 @@ const getStats = async (req, res) => {
     totalOrders,
     completedOrders,
     openComplaints,
+    newUsersToday,
+    newUsersThisWeek,
+    recentUsers,
   ] = await Promise.all([
     User.countDocuments({ role: { $ne: "admin" } }),
     User.countDocuments({ role: "buyer" }),
@@ -159,6 +170,14 @@ const getStats = async (req, res) => {
     Order.countDocuments(),
     Order.countDocuments({ status: "completed" }),
     Complaint.countDocuments({ status: { $in: ["open", "in_progress"] } }),
+    User.countDocuments({ role: { $ne: "admin" }, createdAt: { $gte: startOfToday } }),
+    User.countDocuments({ role: { $ne: "admin" }, createdAt: { $gte: startOfWeek } }),
+    // Recent Registrations widget on the Dashboard — who just signed up,
+    // at a glance, without having to go dig through the Users page.
+    User.find({ role: { $ne: "admin" } })
+      .select("firstName lastName role city businessName kycStatus createdAt")
+      .sort({ createdAt: -1 })
+      .limit(10),
   ]);
 
   const revenueAgg = await Order.aggregate([
@@ -183,6 +202,9 @@ const getStats = async (req, res) => {
       openComplaints,
       totalCommission,
       totalGMV,
+      newUsersToday,
+      newUsersThisWeek,
+      recentUsers,
     },
   });
 };

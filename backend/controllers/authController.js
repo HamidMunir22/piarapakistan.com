@@ -72,6 +72,50 @@ const dispatchOtp = async (user, otpCode, method = "email") => {
 };
 
 // ---------------------------------------------------------------------------
+// Notify every admin account by email the moment a new user finishes
+// registration (OTP verified — a real, confirmed signup, not an abandoned
+// attempt). Looked up dynamically (User.find({ role: "admin" })) instead of
+// a fixed env var so it automatically reaches whichever admin account(s)
+// exist — no extra configuration needed when a new admin is added later via
+// seedAdmin.js or promoted manually. Intentionally not awaited by the
+// caller, same reasoning as dispatchOtp above: a slow/unreachable email
+// provider should never delay the user's own verification response.
+// ---------------------------------------------------------------------------
+const notifyAdminsOfNewRegistration = async (user) => {
+  try {
+    const admins = await User.find({ role: "admin" }).select("email");
+    const adminEmails = admins.map((a) => a.email).filter(Boolean);
+    if (adminEmails.length === 0) return; // no admin account exists yet (e.g. before seedAdmin.js has run)
+
+    const isSellerOrShop = ["seller", "shop"].includes(user.role);
+    const roleLabel = { buyer: "Buyer", seller: "Seller", shop: "Shop" }[user.role] || user.role;
+
+    await sendEmail(
+      adminEmails,
+      `New ${roleLabel} registered on PiaraPakistan: ${user.firstName} ${user.lastName}`,
+      `<h2>New registration</h2>
+       <p><strong>${user.firstName} ${user.lastName}</strong> just registered as a <strong>${roleLabel}</strong>.</p>
+       <ul>
+         <li>Email: ${user.email}</li>
+         <li>Phone: ${user.phone}</li>
+         <li>City: ${user.city}${user.area ? `, ${user.area}` : ""}</li>
+         ${user.businessName ? `<li>Business name: ${user.businessName}</li>` : ""}
+         ${user.category ? `<li>Category: ${user.category === "other" ? user.customCategoryName : user.category}</li>` : ""}
+       </ul>
+       ${
+         isSellerOrShop
+           ? `<p><strong>⚠️ This account needs KYC review before they can list anything.</strong> Go to the Admin Panel → KYC Approvals to verify their ID documents.</p>`
+           : `<p>This is a buyer account — no KYC review needed.</p>`
+       }
+       <p>— PiaraPakistan system</p>`
+    );
+  } catch (err) {
+    // Never let a notification failure affect the user's own registration flow.
+    console.error("[Admin notify] Failed to send new-registration email:", err.message);
+  }
+};
+
+// ---------------------------------------------------------------------------
 // STEP 1: Register - creates an "unverified" account and sends OTP to phone
 // ---------------------------------------------------------------------------
 const registerUser = async (req, res) => {
@@ -316,6 +360,16 @@ const verifyOtp = async (req, res) => {
        }
        <p>Thanks for joining Pakistan's trusted marketplace.<br/>— Team PiaraPakistan</p>`
     );
+
+    // ---- Notify the website owner/admin(s) that a new user just completed
+    // registration (non-blocking, same as the welcome email above). We fire
+    // this here — at OTP-verified time — rather than in registerUser(),
+    // because an unverified signup can still be abandoned/cleaned up (see
+    // the "stale signup" handling in registerUser) and isn't a real
+    // registration yet. Looked up dynamically instead of a fixed env var so
+    // it automatically reaches every admin account, not just one hardcoded
+    // address. ----
+    notifyAdminsOfNewRegistration(user);
 
     const token = generateToken(user._id, user.role);
     return res.status(200).json({

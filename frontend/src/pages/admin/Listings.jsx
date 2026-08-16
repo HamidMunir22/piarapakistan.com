@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { fetchAdminListings, toggleListingAdmin, deleteListingAdmin } from "../../api/admin.js";
-import { formatPKR } from "../../utils/format.js";
-import { Pause, Play, Trash2 } from "lucide-react";
+import { formatPKR, formatDate } from "../../utils/format.js";
+import { Pause, Play, Trash2, FileSpreadsheet, FileText } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext.jsx";
 import { categoryLabel } from "../../utils/categoryLabel.js";
+import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 
 const Listings = () => {
   const { t } = useLanguage();
@@ -11,6 +12,7 @@ const Listings = () => {
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -20,6 +22,47 @@ const Listings = () => {
         setTotal(data.total);
       })
       .finally(() => setLoading(false));
+  };
+
+  const exportColumns = [
+    { header: t("dash.table.title"), key: "title" },
+    { header: t("admin.table.seller"), key: "seller" },
+    { header: t("search.category"), key: "category" },
+    { header: t("dash.table.price"), key: "price" },
+    { header: t("dash.table.status"), key: "status" },
+    { header: t("admin.postedLabel"), key: "posted" },
+  ];
+
+  const buildExportRows = async () => {
+    const data = await fetchAdminListings({ search: search || undefined, limit: 100000 });
+    return data.listings.map((l) => ({
+      title: l.title,
+      seller: l.seller?.businessName || `${l.seller?.firstName || ""} ${l.seller?.lastName || ""}`,
+      category: categoryLabel({ id: l.category, label: l.category }, t),
+      price: formatPKR(l.price),
+      status: l.isActive ? t("dash.active") : t("dash.paused"),
+      posted: formatDate(l.createdAt),
+    }));
+  };
+
+  const handleExportExcel = async () => {
+    setExporting(true);
+    try {
+      const rows = await buildExportRows();
+      exportToExcel(rows, exportColumns, "piarapakistan-listings");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    setExporting(true);
+    try {
+      const rows = await buildExportRows();
+      exportToPDF(rows, exportColumns, "piarapakistan-listings", t("admin.nav.listings"));
+    } finally {
+      setExporting(false);
+    }
   };
 
   useEffect(() => {
@@ -59,6 +102,15 @@ const Listings = () => {
         <button type="submit" className="btn btn-primary">{t("search.searchButton")}</button>
       </form>
 
+      <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
+        <button className="btn btn-secondary" type="button" disabled={exporting} onClick={handleExportExcel}>
+          <FileSpreadsheet size={15} /> {t("admin.exportExcel")}
+        </button>
+        <button className="btn btn-secondary" type="button" disabled={exporting} onClick={handleExportPDF}>
+          <FileText size={15} /> {t("admin.exportPDF")}
+        </button>
+      </div>
+
       {loading ? (
         <p>{t("common.loading")}</p>
       ) : (
@@ -70,6 +122,7 @@ const Listings = () => {
               <th>{t("search.category")}</th>
               <th>{t("dash.table.price")}</th>
               <th>{t("dash.table.status")}</th>
+              <th>{t("admin.postedLabel")}</th>
               <th>{t("dash.table.actions")}</th>
             </tr>
           </thead>
@@ -90,6 +143,7 @@ const Listings = () => {
                     {l.isActive ? t("dash.active") : t("dash.paused")}
                   </span>
                 </td>
+                <td>{formatDate(l.createdAt)}</td>
                 <td style={{ display: "flex", gap: 4 }}>
                   <button className="icon-btn" title={t("admin.pauseActivate")} onClick={() => handleToggle(l)}>
                     {l.isActive ? <Pause size={16} /> : <Play size={16} />}

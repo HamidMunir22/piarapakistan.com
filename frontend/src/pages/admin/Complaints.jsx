@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { fetchAllComplaints, respondToComplaint } from "../../api/admin.js";
+import { FileSpreadsheet, FileText } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext.jsx";
+import { formatDate } from "../../utils/format.js";
+import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 
 const ComplaintRow = ({ complaint, onUpdated }) => {
   const { t } = useLanguage();
@@ -85,6 +88,15 @@ const Complaints = () => {
     rejected: t("help.status.rejected"),
   };
 
+  const COMPLAINT_CATEGORY_LABELS = {
+    fraud: t("admin.complaintCategory.fraud"),
+    payment: t("admin.complaintCategory.payment"),
+    quality: t("admin.complaintCategory.quality"),
+    delivery: t("admin.complaintCategory.delivery"),
+    account: t("admin.complaintCategory.account"),
+    other: t("admin.complaintCategory.other"),
+  };
+
   const load = () => {
     setLoading(true);
     fetchAllComplaints({ status: status || undefined })
@@ -96,6 +108,29 @@ const Complaints = () => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
+
+  // fetchAllComplaints already returns every matching complaint unpaginated
+  // (see backend getAllComplaints), so exporting just re-shapes what's
+  // already loaded -- no extra fetch needed here.
+  const exportColumns = [
+    { header: t("admin.table.name"), key: "user" },
+    { header: t("search.category"), key: "category" },
+    { header: t("admin.subjectLabel"), key: "subject" },
+    { header: t("dash.table.status"), key: "status" },
+    { header: t("admin.postedLabel"), key: "posted" },
+  ];
+
+  const buildExportRows = () =>
+    complaints.map((c) => ({
+      user: `${c.user?.firstName || ""} ${c.user?.lastName || ""} (${c.user?.role || ""})`,
+      category: COMPLAINT_CATEGORY_LABELS[c.category] || c.category,
+      subject: c.subject,
+      status: STATUS_LABELS[c.status],
+      posted: formatDate(c.createdAt),
+    }));
+
+  const handleExportExcel = () => exportToExcel(buildExportRows(), exportColumns, "piarapakistan-complaints");
+  const handleExportPDF = () => exportToPDF(buildExportRows(), exportColumns, "piarapakistan-complaints", t("footer.helpCenter"));
 
   return (
     <div>
@@ -114,6 +149,15 @@ const Complaints = () => {
           <option key={k} value={k}>{label}</option>
         ))}
       </select>
+
+      <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
+        <button className="btn btn-secondary" type="button" disabled={loading || complaints.length === 0} onClick={handleExportExcel}>
+          <FileSpreadsheet size={15} /> {t("admin.exportExcel")}
+        </button>
+        <button className="btn btn-secondary" type="button" disabled={loading || complaints.length === 0} onClick={handleExportPDF}>
+          <FileText size={15} /> {t("admin.exportPDF")}
+        </button>
+      </div>
 
       {loading ? (
         <p>{t("common.loading")}</p>
