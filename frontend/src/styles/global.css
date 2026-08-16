@@ -1623,6 +1623,55 @@ button {
   }
 }
 
+/* ---- Skeleton placeholders (Categories page first load, etc.) ---- */
+@keyframes pp-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.skeleton-card {
+  background: var(--pp-white);
+  border: 1.5px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  padding: 22px 14px;
+  text-align: center;
+}
+
+.skeleton-circle {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--pp-orange-soft), var(--pp-green-soft));
+  animation: pp-skeleton-pulse 1.1s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 12px;
+  width: 70%;
+  margin: 0 auto;
+  border-radius: 6px;
+  background: var(--pp-cream);
+  animation: pp-skeleton-pulse 1.1s ease-in-out infinite;
+}
+
+.categories-grid.categories-grid-loaded > * {
+  animation: pp-card-in 0.35s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-circle,
+  .skeleton-line,
+  .categories-grid.categories-grid-loaded > * {
+    animation: none;
+  }
+}
+
 .auth-card {
   animation: pp-card-in 0.45s ease both;
 }

@@ -17,10 +17,8 @@ const Categories = () => {
       <h1 style={{ fontSize: 28 }}>Categories</h1>
       <p style={{ color: "var(--pp-muted)" }}>Choose a category that matches your need</p>
 
-      {loading ? (
-        <p style={{ marginTop: 30 }}>Loading...</p>
-      ) : (
-        <div className="categories-grid">
+      {!loading && (
+        <div className="categories-grid categories-grid-loaded">
           {categories.map((c) => (
             <CategoryCard key={c.id} category={c} />
           ))}
