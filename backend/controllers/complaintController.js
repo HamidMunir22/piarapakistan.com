@@ -16,7 +16,7 @@ const CATEGORY_LABELS = {
 // complaint from being saved.
 const notifyContactInbox = async (complaint, user) => {
   try {
-    const to = process.env.CONTACT_EMAIL || "services@gmail.com";
+    const to = process.env.CONTACT_EMAIL || "services@piarapakistan.com";
     await sendEmail(
       to,
       `New message: ${complaint.subject}`,

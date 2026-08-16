@@ -51,7 +51,7 @@ const Privacy = () => {
 
       <h2>{t("privacy.h6")}</h2>
       <p>
-        You can request account deletion or a copy of your data by contacting services@gmail.com. You can also
+        You can request account deletion or a copy of your data by contacting services@piarapakistan.com. You can also
         switch the site language between English and Urdu at any time from the navigation bar.
       </p>
 
@@ -62,7 +62,7 @@ const Privacy = () => {
       </p>
 
       <h2>{t("privacy.h8")}</h2>
-      <p>Questions about this policy can be sent to services@gmail.com.</p>
+      <p>Questions about this policy can be sent to services@piarapakistan.com.</p>
     </div>
   );
 };

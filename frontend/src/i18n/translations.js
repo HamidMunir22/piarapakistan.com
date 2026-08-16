@@ -564,6 +564,9 @@ const translations = {
     "admin.recentRegistrationsTitle": "Recent Registrations",
     "admin.noRecentRegistrations": "No registrations yet.",
     "admin.viewAllUsersBtn": "View All Users",
+    "admin.otpTitle": "Admin Security Verification",
+    "admin.otpSubtitle": "We've sent a 6-digit code to your admin email to confirm it's really you.",
+    "admin.otpHint": "Check your email inbox (and spam folder). The code expires in 2 minutes.",
   },
   ur: {
     "nav.home": "ہوم",
@@ -1126,6 +1129,9 @@ const translations = {
     "admin.recentRegistrationsTitle": "حالیہ رجسٹریشنز",
     "admin.noRecentRegistrations": "ابھی تک کوئی رجسٹریشن نہیں۔",
     "admin.viewAllUsersBtn": "تمام صارفین دیکھیں",
+    "admin.otpTitle": "ایڈمن سیکیورٹی تصدیق",
+    "admin.otpSubtitle": "آپ کی ایڈمن ای میل پر 6 ہندسوں کا کوڈ بھیج دیا گیا ہے تاکہ تصدیق ہو سکے کہ یہ واقعی آپ ہیں۔",
+    "admin.otpHint": "اپنا ای میل ان باکس (اور سپیم فولڈر) چیک کریں۔ کوڈ 2 منٹ میں ختم ہو جائے گا۔",
   },
   pa: {
     "nav.home": "گھر",
@@ -1688,6 +1694,9 @@ const translations = {
     "admin.recentRegistrationsTitle": "حالیہ رجسٹریشنز",
     "admin.noRecentRegistrations": "ہجے تک کوئی رجسٹریشن نئیں۔",
     "admin.viewAllUsersBtn": "سارے صارف ویکھو",
+    "admin.otpTitle": "ایڈمن سیکیورٹی تصدیق",
+    "admin.otpSubtitle": "تہاڈی ایڈمن ای میل تے 6 ہندسیاں دا کوڈ گھلیا گیا اے تاکہ پتہ لگے کہ ایہ واقعی تسی او۔",
+    "admin.otpHint": "اپنا ای میل ان باکس (تے سپیم فولڈر) ویکھو۔ کوڈ 2 منٹ وچ ختم ہو جاوے گا۔",
   },
   ps: {
     "nav.home": "کور",
@@ -2250,6 +2259,9 @@ const translations = {
     "admin.recentRegistrationsTitle": "وروستي نوم لیکنې",
     "admin.noRecentRegistrations": "تر اوسه هیڅ نوم لیکنه نشته۔",
     "admin.viewAllUsersBtn": "ټول کاروونکي وګورئ",
+    "admin.otpTitle": "د اډمین امنیتي تصدیق",
+    "admin.otpSubtitle": "ستاسو اډمین بریښنالیک ته یو 6 عددي کوډ لیږل شوی دی ترڅو تایید شي چې دا واقعیا تاسو یاست۔",
+    "admin.otpHint": "خپل بریښنالیک ان باکس (او سپیم فولډر) وګورئ۔ کوډ به په 2 دقیقو کې پای ته ورسیږي۔",
   },
   sd: {
     "nav.home": "گھر",
@@ -2812,6 +2824,9 @@ const translations = {
     "admin.recentRegistrationsTitle": "تازو رجسٽريشنون",
     "admin.noRecentRegistrations": "اڃا تائين ڪا رجسٽريشن ڪانهي۔",
     "admin.viewAllUsersBtn": "سڀ استعمال ڪندڙ ڏسو",
+    "admin.otpTitle": "ايڊمن سيڪيورٽي تصديق",
+    "admin.otpSubtitle": "توهان جي ايڊمن اي ميل تي 6 عددن جو ڪوڊ موڪليو ويو آهي ته پڪ ٿئي ته اهو واقعي توهان آهيو۔",
+    "admin.otpHint": "پنهنجو اي ميل ان باڪس (۽ اسپام فولڊر) چيڪ ڪريو۔ ڪوڊ 2 منٽن ۾ ختم ٿي ويندو۔",
   },
   skr: {
     "nav.home": "گھر",
@@ -3374,6 +3389,9 @@ const translations = {
     "admin.recentRegistrationsTitle": "حالیہ رجسٹریشنز",
     "admin.noRecentRegistrations": "ہاں تئیں کوئی رجسٹریشن کائنی۔",
     "admin.viewAllUsersBtn": "سارے صارف ڈیکھو",
+    "admin.otpTitle": "ایڈمن سیکیورٹی تصدیق",
+    "admin.otpSubtitle": "تہاڈی ایڈمن ای میل تے 6 ہندسیاں دا کوڈ گھلیا ڳیا ہے تاکہ پتہ لگے کہ ایہ واقعی تسی او۔",
+    "admin.otpHint": "اپنا ای میل ان باکس (تے سپیم فولڈر) ڈیکھو۔ کوڈ 2 منٹ وچ ختم ہو ویسی۔",
   },
   bal: {
     "nav.home": "کدگ",
@@ -3936,6 +3954,9 @@ const translations = {
     "admin.recentRegistrationsTitle": "نزیکین رجسٹریشنان",
     "admin.noRecentRegistrations": "تا حال ہچ رجسٹریشن نیست۔",
     "admin.viewAllUsersBtn": "همہ کاربرَان وانگ",
+    "admin.otpTitle": "ایڈمن سیکیورٹی تصدیق",
+    "admin.otpSubtitle": "شمی ایڈمن ای میل سر 6 عددی کوڈ روانگ بوتگ تاں تصدیق بیت کہ ایہ واقعاً شما ات۔",
+    "admin.otpHint": "خپل ای میل ان باکس (و سپیم فولڈر) چیک بکنت۔ کوڈ 2 منٹاں ءَ تہ ختم بیت۔",
   },
 };
 

@@ -593,6 +593,34 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // ---------------------------------------------------------------------
+    // Extra verification step for ADMIN accounts only. The admin has full
+    // access to the entire website, so a leaked or guessed password alone
+    // must never be enough to get in — a 6-digit code is emailed to the
+    // admin's own address (always email, never SMS, since SMS delivery in
+    // Pakistan is unreliable here and this is the inbox the admin
+    // specifically set up for this account) and must be entered correctly
+    // before a token is issued. Every other role skips this and logs in
+    // normally below.
+    // ---------------------------------------------------------------------
+    if (user.role === "admin") {
+      await user.save();
+      const otpCode = generateOtp(6);
+      await Otp.create({
+        identifier: user.email,
+        otp: otpCode,
+        purpose: "login",
+        expiresAt: new Date(Date.now() + OTP_TTL_MS),
+      });
+      await dispatchOtp(user, otpCode, "email");
+      return res.status(403).json({
+        success: false,
+        message: "Verification code sent to your admin email",
+        requiresAdminOtp: true,
+        email: user.email,
+      });
+    }
+
     user.lastLoginAt = new Date();
     await user.save();
 
@@ -620,6 +648,98 @@ const loginUser = async (req, res) => {
 };
 
 // ---------------------------------------------------------------------------
+// Admin login — step 2: verify the emailed 6-digit code, then issue the token
+// ---------------------------------------------------------------------------
+const verifyAdminOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: "Email and code are required" });
+    }
+
+    const record = await Otp.findOne({
+      identifier: email.toLowerCase(),
+      otp,
+      purpose: "login",
+      verified: false,
+    }).sort({ createdAt: -1 });
+
+    if (!record) {
+      return res.status(400).json({ success: false, message: "Invalid or expired code" });
+    }
+    if (record.expiresAt < new Date()) {
+      return res.status(400).json({ success: false, message: "Code has expired. Please request a new one." });
+    }
+
+    // Re-check the role here too (not just at the login step) so this
+    // endpoint can never be used to complete a login for a non-admin account.
+    const user = await User.findOne({ email: email.toLowerCase(), role: "admin" });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Admin account not found" });
+    }
+
+    record.verified = true;
+    await record.save();
+
+    user.lastLoginAt = new Date();
+    await user.save();
+
+    // Every successful admin login gets an alert email — since this account
+    // has full access to the site, the real admin should always know when it
+    // was used, and can immediately tell if it wasn't them.
+    sendEmail(
+      user.email,
+      "Admin login to PiaraPakistan",
+      `<h2>Admin panel access</h2>
+       <p>Your admin account just logged in successfully.</p>
+       <p style="color:#888;font-size:13px;">If this wasn't you, log in and change your admin password immediately.</p>
+       <p>— PiaraPakistan system</p>`
+    );
+
+    const token = generateToken(user._id, user.role);
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: user.toSafeObject(),
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Server error verifying admin code" });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Admin login — resend the 6-digit code (e.g. it expired or got lost)
+// ---------------------------------------------------------------------------
+const resendAdminOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+    const user = await User.findOne({ email: email.toLowerCase(), role: "admin" });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Admin account not found" });
+    }
+
+    const otpCode = generateOtp(6);
+    await Otp.create({
+      identifier: user.email,
+      otp: otpCode,
+      purpose: "login",
+      expiresAt: new Date(Date.now() + OTP_TTL_MS),
+    });
+    await dispatchOtp(user, otpCode, "email");
+
+    return res.status(200).json({ success: true, message: "Verification code resent to your email" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Server error resending code" });
+  }
+};
+
+// ---------------------------------------------------------------------------
 // Get logged-in user's profile
 // ---------------------------------------------------------------------------
 const getMe = async (req, res) => {
@@ -631,6 +751,8 @@ module.exports = {
   verifyOtp,
   resendOtp,
   loginUser,
+  verifyAdminOtp,
+  resendAdminOtp,
   getMe,
   forgotPassword,
   resetPassword,

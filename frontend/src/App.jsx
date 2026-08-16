@@ -11,6 +11,7 @@ import Terms from "./pages/Terms.jsx";
 import Privacy from "./pages/Privacy.jsx";
 import Register from "./pages/Register.jsx";
 import VerifyOtp from "./pages/VerifyOtp.jsx";
+import AdminVerifyOtp from "./pages/AdminVerifyOtp.jsx";
 import Login from "./pages/Login.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Categories from "./pages/Categories.jsx";
@@ -43,6 +44,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
+        <Route path="/admin-verify-otp" element={<AdminVerifyOtp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/categories" element={<Categories />} />

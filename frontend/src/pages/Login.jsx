@@ -24,6 +24,10 @@ const Login = () => {
       login(res.data.token, res.data.user);
       navigate("/");
     } catch (err) {
+      if (err.response?.data?.requiresAdminOtp) {
+        navigate("/admin-verify-otp", { state: { email: err.response.data.email } });
+        return;
+      }
       if (err.response?.data?.requiresOtp) {
         navigate("/verify-otp", { state: { phone: err.response.data.phone } });
         return;

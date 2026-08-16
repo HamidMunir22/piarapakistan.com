@@ -50,7 +50,7 @@ const Footer = () => {
         <div className="footer-col">
           <h4>{t("contact.getInTouch")}</h4>
           <span className="footer-contact-line">
-            <Mail size={14} /> services@gmail.com
+            <Mail size={14} /> services@piarapakistan.com
           </span>
           <span className="footer-contact-line">
             <MapPin size={14} /> {t("contact.locationValue")}
