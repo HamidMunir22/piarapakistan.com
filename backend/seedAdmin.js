@@ -31,6 +31,7 @@ const run = async () => {
     email,
     phone,
     password,
+    gender: "other", // system/admin account -- not a real person, "other" is the neutral schema value
     role: "admin",
     cnicNumber: "00000-0000000-0",
     address: "Head Office",
