@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Search as SearchIcon, ShoppingCart, ClipboardList, MessageCircle, Languages, Menu, X, Check } from "lucide-react";
+import { Search as SearchIcon, ShoppingCart, ClipboardList, MessageCircle, Languages, Menu, X, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCart } from "../context/CartContext.jsx";
 import { useLanguage, LANGUAGES } from "../context/LanguageContext.jsx";
@@ -48,11 +48,17 @@ const LanguageMenu = ({ className = "" }) => {
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { cartCount } = useCart();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { totalUnread } = useChat();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Mobile language list starts collapsed (just a "current language" toggle
+  // row) instead of always showing all 7 rows -- that's what was making the
+  // mobile menu so tall. Reset alongside the whole panel so it never reopens
+  // pre-expanded next time the hamburger is tapped.
+  const [langOpen, setLangOpen] = useState(false);
+  const currentLang = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0];
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -62,7 +68,10 @@ const Navbar = () => {
 
   const isSellerOrShop = user?.role === "seller" || user?.role === "shop";
   const isAdmin = user?.role === "admin";
-  const closeMobile = () => setMobileOpen(false);
+  const closeMobile = () => {
+    setMobileOpen(false);
+    setLangOpen(false);
+  };
   const navLinkClass = ({ isActive }) => (isActive ? "active" : "");
 
   return (
@@ -195,12 +204,22 @@ const Navbar = () => {
           )}
           <NavLink to="/contact" className={navLinkClass} onClick={closeMobile}>{t("nav.contact")}</NavLink>
 
-          <div className="navbar-mobile-lang-label">{t("nav.languageLabel")}</div>
-          <div className="navbar-mobile-lang-options">
-            {LANGUAGES.map((l) => (
-              <MobileLangOption key={l.code} lang={l} />
-            ))}
-          </div>
+          <button
+            type="button"
+            className="navbar-mobile-lang-toggle"
+            onClick={() => setLangOpen((o) => !o)}
+            aria-expanded={langOpen}
+          >
+            <span>{t("nav.languageLabel")}: {currentLang.label}</span>
+            {langOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+          {langOpen && (
+            <div className="navbar-mobile-lang-options">
+              {LANGUAGES.map((l) => (
+                <MobileLangOption key={l.code} lang={l} onSelect={closeMobile} />
+              ))}
+            </div>
+          )}
 
           <div className="navbar-mobile-auth">
             {user ? (
@@ -233,12 +252,15 @@ const Navbar = () => {
 
 // Small helper so the mobile language list can read/set language via context
 // without prop-drilling from the parent.
-const MobileLangOption = ({ lang }) => {
+const MobileLangOption = ({ lang, onSelect }) => {
   const { language, setLanguage } = useLanguage();
   return (
     <button
       className={`navbar-mobile-lang-option ${lang.code === language ? "active" : ""}`}
-      onClick={() => setLanguage(lang.code)}
+      onClick={() => {
+        setLanguage(lang.code);
+        onSelect?.();
+      }}
       type="button"
     >
       {lang.label}

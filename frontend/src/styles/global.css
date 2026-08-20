@@ -1106,6 +1106,12 @@ button {
   border-radius: 10px;
   font-weight: 600;
   font-size: 14.5px;
+  /* Urdu/Punjabi/Pashto/Sindhi/Saraiki/Balochi all fall back to the Noto
+     Nastaliq Urdu font (see :root --font-body), whose calligraphic glyphs
+     have much taller ascenders/descenders than Latin text at the same
+     font-size. Without extra line-height, adjacent rows visually collide
+     ("words overlapping") in every language except English. */
+  line-height: 1.7;
 }
 
 .navbar-mobile-panel a:hover {
@@ -1914,10 +1920,33 @@ button {
   margin: 10px 8px 2px;
 }
 
+/* Collapsed-by-default row shown instead of the label -- tap to expand the
+   full list below. Keeps the mobile menu short instead of always showing
+   all 7 languages stacked. */
+.navbar-mobile-lang-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 8px;
+  margin-top: 6px;
+  border-radius: 10px;
+  border: none;
+  background: var(--pp-cream);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--pp-ink);
+  line-height: 1.7;
+  cursor: pointer;
+  text-align: left;
+}
+
 .navbar-mobile-lang-options {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-top: 4px;
   margin-bottom: 4px;
 }
 
@@ -1932,6 +1961,7 @@ button {
   font-size: 13.5px;
   font-weight: 600;
   color: var(--pp-ink);
+  line-height: 1.7;
 }
 
 .navbar-mobile-lang-option.active {
